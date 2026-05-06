@@ -81,7 +81,7 @@ def push_audio(user_id, audio_url):
             {
                 "type": "audio",
                 "originalContentUrl": audio_url,
-                "duration": 2000
+                "duration": 1000
             }
         ]
     }
