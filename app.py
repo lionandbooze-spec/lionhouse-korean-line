@@ -27,72 +27,61 @@ words = {
 
 user_state = {}
 
-# -----------------
-# LINE返信
-# -----------------
+# ----------------------------
+# LINE返信（デバッグ出力あり）
+# ----------------------------
 def reply(reply_token, messages):
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {ACCESS_TOKEN}"
     }
 
-    requests.post(
+    response = requests.post(
         "https://api.line.me/v2/bot/message/reply",
         headers=headers,
-        ddef reply(reply_token, messages):
-
-    headers = {
-
-        "Content-Type": "application/json",
-
-        "Authorization": f"Bearer {ACCESS_TOKEN}"
-
-    }
-
-    res = requests.post(
-
-        "https://api.line.me/v2/bot/message/reply",
-
-        headers=headers,
-
         json={
-
             "replyToken": reply_token,
-
             "messages": messages
-
         }
-
     )
 
-    print("LINE Reply Status:", res.status_code)
+    print("=== LINE Reply ===")
+    print("Status:", response.status_code)
+    print("Body:", response.text)
+    print("==================")
 
-    print("LINE Reply Body:", res.text)ata=json.dumps({
-            "replyToken": reply_token,
-            "messages": messages
-        })
-    )
-
-# -----------------
-# レベルメニュー
-# -----------------
+# ----------------------------
+# レベル選択
+# ----------------------------
 def level_menu():
     return {
         "type": "text",
         "text": "レベルを選んでください",
         "quickReply": {
             "items": [
-                {"type": "action",
-                 "action": {"type": "message", "label": "初級", "text": "初級"}},
-                {"type": "action",
-                 "action": {"type": "message", "label": "中級", "text": "中級"}}
+                {
+                    "type": "action",
+                    "action": {
+                        "type": "message",
+                        "label": "初級",
+                        "text": "初級"
+                    }
+                },
+                {
+                    "type": "action",
+                    "action": {
+                        "type": "message",
+                        "label": "中級",
+                        "text": "中級"
+                    }
+                }
             ]
         }
     }
 
-# -----------------
-# ボタン生成
-# -----------------
+# ----------------------------
+# ボタン作成
+# ----------------------------
 def build_button(text):
     return {
         "type": "button",
@@ -102,13 +91,12 @@ def build_button(text):
             "text": text
         },
         "style": "primary",
-        "color": "#6CC4A1",
-        "flex": 1
+        "color": "#6CC4A1"
     }
 
-# -----------------
+# ----------------------------
 # 問題生成
-# -----------------
+# ----------------------------
 def create_question(user_id):
     level = user_state[user_id]["level"]
     question = random.choice(words[level])
@@ -135,21 +123,8 @@ def create_question(user_id):
         {"type": "text", "text": prompt, "weight": "bold", "size": "lg"}
     ]
 
-    # 2列ボタン
-    for i in range(0, len(choices), 2):
-        row = {
-            "type": "box",
-            "layout": "horizontal",
-            "spacing": "sm",
-            "contents": []
-        }
-
-        row["contents"].append(build_button(choices[i]))
-
-        if i + 1 < len(choices):
-            row["contents"].append(build_button(choices[i + 1]))
-
-        contents.append(row)
+    for choice in choices:
+        contents.append(build_button(choice))
 
     contents.append({
         "type": "button",
@@ -158,7 +133,7 @@ def create_question(user_id):
             "label": "やめる",
             "text": "やめる"
         },
-        "style": "link"
+        "style": "secondary"
     })
 
     return {
@@ -169,15 +144,15 @@ def create_question(user_id):
             "body": {
                 "type": "box",
                 "layout": "vertical",
-                "spacing": "lg",
+                "spacing": "md",
                 "contents": contents
             }
         }
     }
 
-# -----------------
+# ----------------------------
 # Webhook
-# -----------------
+# ----------------------------
 @app.route("/callback", methods=["POST"])
 def callback():
     body = request.get_json()
@@ -198,6 +173,8 @@ def callback():
 
         user_id = event["source"]["userId"]
         reply_token = event["replyToken"]
+
+        print("Received text:", text)
 
         # レベル選択
         if text in words:
