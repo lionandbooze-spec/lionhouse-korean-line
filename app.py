@@ -5,21 +5,14 @@ import os
 import random
 
 app = Flask(__name__)
-
 ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 
-# ======================
-# words.json 読み込み
-# ======================
 with open("words.json", "r", encoding="utf-8") as f:
     words = json.load(f)
 
 user_state = {}
 user_progress = {}
 
-# ======================
-# LINE返信
-# ======================
 def send_reply(reply_token, messages):
     headers = {
         "Content-Type": "application/json",
@@ -42,15 +35,10 @@ def send_reply(reply_token, messages):
 # ======================
 def category_menu():
     buttons = []
-
     for cat in words.keys():
         buttons.append({
             "type": "button",
-            "action": {
-                "type": "message",
-                "label": cat,
-                "text": cat
-            },
+            "action": {"type": "message", "label": cat, "text": cat},
             "style": "primary",
             "color": "#6CC4A1",
             "margin": "md"
@@ -66,12 +54,7 @@ def category_menu():
                 "layout": "vertical",
                 "spacing": "md",
                 "contents": [
-                    {
-                        "type": "text",
-                        "text": "カテゴリを選んでください",
-                        "weight": "bold",
-                        "size": "lg"
-                    }
+                    {"type": "text", "text": "カテゴリを選んでください", "weight": "bold", "size": "lg"}
                 ] + buttons
             }
         }
@@ -82,15 +65,10 @@ def category_menu():
 # ======================
 def level_menu(category):
     buttons = []
-
     for level in words[category].keys():
         buttons.append({
             "type": "button",
-            "action": {
-                "type": "message",
-                "label": level,
-                "text": level
-            },
+            "action": {"type": "message", "label": level, "text": level},
             "style": "primary",
             "color": "#4C8BF5",
             "margin": "md"
@@ -106,19 +84,14 @@ def level_menu(category):
                 "layout": "vertical",
                 "spacing": "md",
                 "contents": [
-                    {
-                        "type": "text",
-                        "text": f"{category} のレベルを選んでください",
-                        "weight": "bold",
-                        "size": "lg"
-                    }
+                    {"type": "text", "text": f"{category} のレベルを選んでください", "weight": "bold", "size": "lg"}
                 ] + buttons
             }
         }
     }
 
 # ======================
-# セット生成（70/20/10）
+# セット生成
 # ======================
 def build_question_set(user_id, category, level):
     all_words = words[category][level]
@@ -148,13 +121,9 @@ def build_question_set(user_id, category, level):
             group3.append(w)
 
     selected = []
-
-    if group1:
-        selected += random.sample(group1, min(7, len(group1)))
-    if group2:
-        selected += random.sample(group2, min(2, len(group2)))
-    if group3:
-        selected += random.sample(group3, min(1, len(group3)))
+    if group1: selected += random.sample(group1, min(7, len(group1)))
+    if group2: selected += random.sample(group2, min(2, len(group2)))
+    if group3: selected += random.sample(group3, min(1, len(group3)))
 
     while len(selected) < 10 and len(selected) < len(all_words):
         candidate = random.choice(all_words)
@@ -165,7 +134,7 @@ def build_question_set(user_id, category, level):
     return selected
 
 # ======================
-# 問題生成（4色ボタン）
+# 問題生成
 # ======================
 def create_question(user_id):
     state = user_state[user_id]
@@ -183,8 +152,7 @@ def create_question(user_id):
         pool = [w["jp"] for w in words[state["category"]][state["level"]]]
 
     pool = list(set(pool))
-    if correct in pool:
-        pool.remove(correct)
+    pool.remove(correct)
 
     choices = random.sample(pool, min(3, len(pool)))
     choices.append(correct)
@@ -197,29 +165,25 @@ def create_question(user_id):
 
     rows = []
     for i in range(0, len(choices), 2):
-        row = {
-            "type": "box",
-            "layout": "horizontal",
-            "spacing": "sm",
-            "contents": []
-        }
-
+        row = {"type": "box", "layout": "horizontal", "spacing": "sm", "contents": []}
         for j in range(2):
             if i + j < len(choices):
                 idx = i + j
                 row["contents"].append({
                     "type": "button",
-                    "action": {
-                        "type": "message",
-                        "label": choices[idx],
-                        "text": choices[idx]
-                    },
+                    "action": {"type": "message", "label": choices[idx], "text": choices[idx]},
                     "style": "primary",
                     "color": colors[idx],
                     "flex": 1
                 })
-
         rows.append(row)
+
+    rows.append({
+        "type": "button",
+        "action": {"type": "message", "label": "やめる", "text": "やめる"},
+        "style": "secondary",
+        "margin": "lg"
+    })
 
     return {
         "type": "flex",
@@ -231,14 +195,44 @@ def create_question(user_id):
                 "layout": "vertical",
                 "spacing": "lg",
                 "contents": [
-                    {
-                        "type": "text",
-                        "text": prompt,
-                        "weight": "bold",
-                        "size": "lg",
-                        "wrap": True
-                    }
+                    {"type": "text", "text": prompt, "weight": "bold", "size": "xl", "wrap": True}
                 ] + rows
+            }
+        }
+    }
+
+# ======================
+# セット終了UI
+# ======================
+def end_menu(category, level, correct_count, percent, mastered, total):
+
+    return {
+        "type": "flex",
+        "altText": "セット終了",
+        "contents": {
+            "type": "bubble",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "md",
+                "contents": [
+                    {"type": "text", "text": "🎉 セット終了！", "weight": "bold", "size": "lg"},
+                    {"type": "text", "text": f"正解数：{correct_count} / 10"},
+                    {"type": "text", "text": f"習熟度：{percent}%"},
+                    {"type": "text", "text": f"（{mastered}/{total}習得）"},
+                    {
+                        "type": "button",
+                        "action": {"type": "message", "label": "🔁 同じカテゴリ・レベルで続ける", "text": f"続ける::{category}::{level}"},
+                        "style": "primary",
+                        "margin": "lg"
+                    },
+                    {
+                        "type": "button",
+                        "action": {"type": "message", "label": "🏠 カテゴリ選択に戻る", "text": "カテゴリへ戻る"},
+                        "style": "secondary",
+                        "margin": "md"
+                    }
+                ]
             }
         }
     }
@@ -259,13 +253,35 @@ def callback():
         reply_token = event["replyToken"]
         text = event["message"]["text"]
 
-        # カテゴリ選択
+        if text == "カテゴリへ戻る":
+            if user_id in user_state:
+                del user_state[user_id]
+            send_reply(reply_token, [category_menu()])
+            continue
+
+        if text.startswith("続ける::"):
+            _, category, level = text.split("::")
+            user_state[user_id] = {
+                "category": category,
+                "level": level,
+                "current_set": build_question_set(user_id, category, level),
+                "index": 0,
+                "correct_count": 0
+            }
+            send_reply(reply_token, [create_question(user_id)])
+            continue
+
+        if text == "やめる":
+            if user_id in user_state:
+                del user_state[user_id]
+            send_reply(reply_token, [category_menu()])
+            continue
+
         if text in words:
             user_state[user_id] = {"category": text}
             send_reply(reply_token, [level_menu(text)])
             continue
 
-        # レベル選択
         if user_id in user_state and "category" in user_state[user_id]:
             category = user_state[user_id]["category"]
 
@@ -277,7 +293,6 @@ def callback():
                 send_reply(reply_token, [create_question(user_id)])
                 continue
 
-        # 回答処理
         if user_id in user_state and "current_set" in user_state[user_id]:
             state = user_state[user_id]
 
@@ -307,16 +322,10 @@ def callback():
                     total = len(words[category][level])
                     percent = int((mastered / total) * 100) if total > 0 else 0
 
-                    send_reply(reply_token, [{
-                        "type": "text",
-                        "text": (
-                            f"{result}\n\n"
-                            f"🎉 セット終了！\n"
-                            f"正解数：{state['correct_count']} / 10\n\n"
-                            f"📊 習熟度：{percent}%\n"
-                            f"（{mastered}/{total}習得）"
-                        )
-                    }, category_menu()])
+                    send_reply(reply_token, [
+                        {"type": "text", "text": result},
+                        end_menu(category, level, state["correct_count"], percent, mastered, total)
+                    ])
 
                     del user_state[user_id]
                     continue
