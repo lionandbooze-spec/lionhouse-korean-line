@@ -3,6 +3,7 @@ import requests
 import json
 import os
 import random
+from urllib.parse import quote
 
 app = Flask(__name__)
 
@@ -29,7 +30,7 @@ words = {
 }
 
 # ----------------------
-# 音声対応表
+# 音声ファイル対応
 # ----------------------
 filename_map = {
     "안녕하세요": "안녕하세요.mp3",
@@ -62,14 +63,14 @@ def send_reply(reply_token, messages):
         "messages": messages
     }
 
-    response = requests.post(
+    res = requests.post(
         "https://api.line.me/v2/bot/message/reply",
         headers=headers,
         data=json.dumps(data)
     )
 
-    print("Reply:", response.status_code)
-    print(response.text)
+    print("Reply:", res.status_code)
+    print(res.text)
 
 
 # ----------------------
@@ -92,14 +93,14 @@ def push_audio(user_id, audio_url):
         ]
     }
 
-    response = requests.post(
+    res = requests.post(
         "https://api.line.me/v2/bot/message/push",
         headers=headers,
         data=json.dumps(data)
     )
 
-    print("Push:", response.status_code)
-    print(response.text)
+    print("Push:", res.status_code)
+    print(res.text)
 
 
 # ----------------------
@@ -152,7 +153,8 @@ def create_question(user_id):
 
         audio_file = filename_map.get(question["kr"])
         if audio_file:
-            audio_url = BASE_AUDIO_URL + audio_file
+            encoded_file = quote(audio_file)
+            audio_url = BASE_AUDIO_URL + encoded_file
             user_state[user_id]["last_audio"] = audio_url
 
     wrong = list(set(wrong))
@@ -167,6 +169,7 @@ def create_question(user_id):
         {"type": "text", "text": prompt, "weight": "bold", "size": "lg"}
     ]
 
+    # 韓→日の時だけ音声ボタン
     if user_state[user_id].get("last_audio"):
         contents.append({
             "type": "button",
@@ -174,7 +177,7 @@ def create_question(user_id):
             "style": "secondary"
         })
 
-    rows = []
+    # 選択肢ボタン
     for i in range(0, len(choices), 2):
         row = {
             "type": "box",
@@ -182,15 +185,12 @@ def create_question(user_id):
             "spacing": "sm",
             "contents": []
         }
-
         row["contents"].append(build_button(choices[i]))
         if i + 1 < len(choices):
             row["contents"].append(build_button(choices[i+1]))
+        contents.append(row)
 
-        rows.append(row)
-
-    contents.extend(rows)
-
+    # やめるボタン
     contents.append({
         "type": "button",
         "action": {"type": "message", "label": "やめる", "text": "やめる"},
@@ -243,6 +243,7 @@ def callback():
             flex = create_question(user_id)
             send_reply(reply_token, [flex])
 
+            # 音声があればpush
             audio_url = user_state[user_id].get("last_audio")
             if audio_url:
                 push_audio(user_id, audio_url)
