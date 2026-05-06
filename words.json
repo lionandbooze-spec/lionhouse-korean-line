@@ -1,56 +1,53 @@
 {
   "🏠 日常": {
     "基礎": [
-      { "kr": "어머니", "jp": "母", "type": "noun", "example": { "basic": { "kr": "어머니가 요리해요", "jp": "母が料理します" } } },
-      { "kr": "아버지", "jp": "父", "type": "noun", "example": { "basic": { "kr": "아버지가 일해요", "jp": "父が働きます" } } },
-      { "kr": "친구", "jp": "友達", "type": "noun", "example": { "basic": { "kr": "친구를 만나요", "jp": "友達に会います" } } },
-      { "kr": "회사", "jp": "会社", "type": "noun", "example": { "basic": { "kr": "회사에 가요", "jp": "会社に行きます" } } },
-      { "kr": "학교", "jp": "学校", "type": "noun", "example": { "basic": { "kr": "학교에서 공부해요", "jp": "学校で勉強します" } } },
-      { "kr": "집", "jp": "家", "type": "noun", "example": { "basic": { "kr": "집에 가요", "jp": "家に行きます" } } },
-      { "kr": "물", "jp": "水", "type": "noun", "example": { "basic": { "kr": "물을 마셔요", "jp": "水を飲みます" } } },
-      { "kr": "밥", "jp": "ご飯", "type": "noun", "example": { "basic": { "kr": "밥을 먹어요", "jp": "ご飯を食べます" } } },
-
-      { "kr": "가다", "jp": "行く", "type": "verb",
-        "conjugation": { "basic": { "present": ["가요", "行きます"], "past": ["갔어요", "行きました"] } } },
-      { "kr": "오다", "jp": "来る", "type": "verb",
-        "conjugation": { "basic": { "present": ["와요", "来ます"], "past": ["왔어요", "来ました"] } } },
-      { "kr": "먹다", "jp": "食べる", "type": "verb",
-        "conjugation": { "basic": { "present": ["먹어요", "食べます"], "past": ["먹었어요", "食べました"] } } },
-      { "kr": "보다", "jp": "見る", "type": "verb",
-        "conjugation": { "basic": { "present": ["봐요", "見ます"], "past": ["봤어요", "見ました"] } } },
-
-      { "kr": "좋다", "jp": "良い", "type": "adjective",
-        "example": { "basic": { "kr": "날씨가 좋아요", "jp": "天気が良いです" } } },
-      { "kr": "크다", "jp": "大きい", "type": "adjective",
-        "example": { "basic": { "kr": "집이 커요", "jp": "家が大きいです" } } }
+      { "kr": "사람", "jp": "人", "type": "noun" },
+      { "kr": "친구", "jp": "友達", "type": "noun" },
+      { "kr": "가족", "jp": "家族", "type": "noun" },
+      { "kr": "집", "jp": "家", "type": "noun" },
+      { "kr": "학교", "jp": "学校", "type": "noun" },
+      { "kr": "회사", "jp": "会社", "type": "noun" },
+      { "kr": "일", "jp": "仕事", "type": "noun" },
+      { "kr": "회의", "jp": "会議", "type": "noun" },
+      { "kr": "택시", "jp": "タクシー", "type": "noun" },
+      { "kr": "기차", "jp": "電車", "type": "noun" },
+      { "kr": "비행기", "jp": "飛行機", "type": "noun" },
+      { "kr": "자동차", "jp": "車", "type": "noun" },
+      { "kr": "가다", "jp": "行く", "type": "verb" },
+      { "kr": "오다", "jp": "来る", "type": "verb" },
+      { "kr": "먹다", "jp": "食べる", "type": "verb" },
+      { "kr": "마시다", "jp": "飲む", "type": "verb" },
+      { "kr": "사다", "jp": "買う", "type": "verb" },
+      { "kr": "팔다", "jp": "売る", "type": "verb" },
+      { "kr": "일하다", "jp": "働く", "type": "verb" },
+      { "kr": "출근하다", "jp": "出勤する", "type": "verb" },
+      { "kr": "퇴근하다", "jp": "退勤する", "type": "verb" },
+      { "kr": "청소하다", "jp": "掃除する", "type": "verb" },
+      { "kr": "요리하다", "jp": "料理する", "type": "verb" },
+      { "kr": "가격", "jp": "価格", "type": "noun" },
+      { "kr": "카드", "jp": "カード", "type": "noun" },
+      { "kr": "현금", "jp": "現金", "type": "noun" },
+      { "kr": "휴대폰", "jp": "携帯電話", "type": "noun" },
+      { "kr": "컴퓨터", "jp": "コンピューター", "type": "noun" },
+      { "kr": "냉장고", "jp": "冷蔵庫", "type": "noun" },
+      { "kr": "세탁기", "jp": "洗濯機", "type": "noun" }
     ],
-
-    "応用": [
-      { "kr": "예약하다", "jp": "予約する", "type": "verb",
-        "conjugation": { "basic": { "present": ["예약해요", "予約します"], "past": ["예약했어요", "予約しました"] } } },
-      { "kr": "늦다", "jp": "遅れる", "type": "verb",
-        "conjugation": { "basic": { "present": ["늦어요", "遅れます"], "past": ["늦었어요", "遅れました"] } } },
-      { "kr": "약속하다", "jp": "約束する", "type": "verb",
-        "conjugation": { "basic": { "present": ["약속해요", "約束します"], "past": ["약속했어요", "約束しました"] } } },
-      { "kr": "도와주다", "jp": "手伝う", "type": "verb",
-        "conjugation": { "basic": { "present": ["도와줘요", "手伝います"], "past": ["도와줬어요", "手伝いました"] } } },
-
-      { "kr": "~본 적이 있어요", "jp": "〜したことがあります", "type": "grammar",
-        "example": { "basic": { "kr": "한국에 가본 적이 있어요", "jp": "韓国に行ったことがあります" } } },
-
-      { "kr": "~기 때문에", "jp": "〜なので", "type": "grammar",
-        "example": { "basic": { "kr": "비가 오기 때문에 못 가요", "jp": "雨が降るので行けません" } } }
-    ],
-
+    "応用": [],
     "実践": []
   },
 
   "🌍 自然・身体": {
     "基礎": [
-      { "kr": "하늘", "jp": "空", "type": "noun",
-        "example": { "basic": { "kr": "하늘이 파래요", "jp": "空が青いです" } } },
-      { "kr": "몸", "jp": "体", "type": "noun",
-        "example": { "basic": { "kr": "몸이 아파요", "jp": "体が痛いです" } } }
+      { "kr": "몸", "jp": "体", "type": "noun" },
+      { "kr": "머리", "jp": "頭", "type": "noun" },
+      { "kr": "손", "jp": "手", "type": "noun" },
+      { "kr": "눈", "jp": "目", "type": "noun" },
+      { "kr": "비", "jp": "雨", "type": "noun" },
+      { "kr": "눈(雪)", "jp": "雪", "type": "noun" },
+      { "kr": "바람", "jp": "風", "type": "noun" },
+      { "kr": "덥다", "jp": "暑い", "type": "adjective" },
+      { "kr": "춥다", "jp": "寒い", "type": "adjective" },
+      { "kr": "아프다", "jp": "痛い", "type": "adjective" }
     ],
     "応用": [],
     "実践": []
@@ -58,16 +55,16 @@
 
   "⏰ 時間・数": {
     "基礎": [
-      { "kr": "오늘", "jp": "今日", "type": "noun",
-        "example": { "basic": { "kr": "오늘 바빠요", "jp": "今日は忙しいです" } } },
-      { "kr": "내일", "jp": "明日", "type": "noun",
-        "example": { "basic": { "kr": "내일 가요", "jp": "明日行きます" } } },
-      { "kr": "지금", "jp": "今", "type": "noun",
-        "example": { "basic": { "kr": "지금 와요", "jp": "今来ます" } } },
-      { "kr": "하나", "jp": "1つ", "type": "noun",
-        "example": { "basic": { "kr": "하나 주세요", "jp": "1つください" } } },
-      { "kr": "둘", "jp": "2つ", "type": "noun",
-        "example": { "basic": { "kr": "둘 있어요", "jp": "2つあります" } } }
+      { "kr": "오늘", "jp": "今日", "type": "noun" },
+      { "kr": "내일", "jp": "明日", "type": "noun" },
+      { "kr": "어제", "jp": "昨日", "type": "noun" },
+      { "kr": "지금", "jp": "今", "type": "noun" },
+      { "kr": "시간", "jp": "時間", "type": "noun" },
+      { "kr": "하나", "jp": "1", "type": "number" },
+      { "kr": "둘", "jp": "2", "type": "number" },
+      { "kr": "셋", "jp": "3", "type": "number" },
+      { "kr": "많다", "jp": "多い", "type": "adjective" },
+      { "kr": "적다", "jp": "少ない", "type": "adjective" }
     ],
     "応用": [],
     "実践": []
@@ -75,19 +72,38 @@
 
   "🧩 文法": {
     "基礎": [
-      { "kr": "은/는", "jp": "〜は", "type": "grammar",
-        "example": { "basic": { "kr": "저는 학생이에요", "jp": "私は学生です" } } },
-      { "kr": "이/가", "jp": "〜が", "type": "grammar",
-        "example": { "basic": { "kr": "비가 와요", "jp": "雨が降ります" } } },
-      { "kr": "~고", "jp": "〜て", "type": "grammar",
-        "example": { "basic": { "kr": "밥을 먹고 공부해요", "jp": "ご飯を食べて勉強します" } } }
+      { "kr": "~입니다", "jp": "〜です", "type": "grammar" },
+      { "kr": "~아요/어요", "jp": "丁寧体現在", "type": "grammar" },
+      { "kr": "~았어요/었어요", "jp": "過去形", "type": "grammar" }
     ],
-    "応用": [],
+    "応用": [
+      {
+        "kr": "~아서/어서",
+        "jp": "〜だから",
+        "type": "grammar"
+      },
+      {
+        "kr": "~지만",
+        "jp": "〜けれども",
+        "type": "grammar"
+      },
+      {
+        "kr": "~고 있다",
+        "jp": "〜している",
+        "type": "grammar"
+      }
+    ],
     "実践": []
   },
 
   "💬 表現": {
-    "基礎": [],
+    "基礎": [
+      { "kr": "안녕하세요", "jp": "こんにちは", "type": "expression" },
+      { "kr": "감사합니다", "jp": "ありがとうございます", "type": "expression" },
+      { "kr": "죄송합니다", "jp": "すみません", "type": "expression" },
+      { "kr": "괜찮아요", "jp": "大丈夫です", "type": "expression" },
+      { "kr": "알겠습니다", "jp": "分かりました", "type": "expression" }
+    ],
     "応用": [],
     "実践": []
   }
