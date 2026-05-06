@@ -39,7 +39,35 @@ def reply(reply_token, messages):
     requests.post(
         "https://api.line.me/v2/bot/message/reply",
         headers=headers,
-        data=json.dumps({
+        ddef reply(reply_token, messages):
+
+    headers = {
+
+        "Content-Type": "application/json",
+
+        "Authorization": f"Bearer {ACCESS_TOKEN}"
+
+    }
+
+    res = requests.post(
+
+        "https://api.line.me/v2/bot/message/reply",
+
+        headers=headers,
+
+        json={
+
+            "replyToken": reply_token,
+
+            "messages": messages
+
+        }
+
+    )
+
+    print("LINE Reply Status:", res.status_code)
+
+    print("LINE Reply Body:", res.text)ata=json.dumps({
             "replyToken": reply_token,
             "messages": messages
         })
