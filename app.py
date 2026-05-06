@@ -136,7 +136,7 @@ def build_question_set(user_id, category, level):
     return selected
 
 # ======================
-# 教材表示ブロック
+# 教材ブロック
 # ======================
 def build_learning_block(word, level, streak):
     if streak < 2:
@@ -178,6 +178,49 @@ def build_learning_block(word, level, streak):
             text_block += f"（{section['jp']}）\n"
 
     return text_block
+
+# ======================
+# 次へボタン
+# ======================
+def result_menu(result_text):
+    return {
+        "type": "flex",
+        "altText": "結果",
+        "contents": {
+            "type": "bubble",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "md",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": result_text,
+                        "wrap": True
+                    },
+                    {
+                        "type": "button",
+                        "action": {
+                            "type": "message",
+                            "label": "▶ 次の問題へ",
+                            "text": "次へ"
+                        },
+                        "style": "primary",
+                        "margin": "lg"
+                    },
+                    {
+                        "type": "button",
+                        "action": {
+                            "type": "message",
+                            "label": "やめる",
+                            "text": "やめる"
+                        },
+                        "style": "secondary"
+                    }
+                ]
+            }
+        }
+    }
 
 # ======================
 # 問題生成
@@ -224,13 +267,6 @@ def create_question(user_id):
                 })
         rows.append(row)
 
-    rows.append({
-        "type": "button",
-        "action": {"type": "message", "label": "やめる", "text": "やめる"},
-        "style": "secondary",
-        "margin": "lg"
-    })
-
     return {
         "type": "flex",
         "altText": "クイズ問題",
@@ -243,39 +279,6 @@ def create_question(user_id):
                 "contents": [
                     {"type": "text", "text": prompt, "weight": "bold", "size": "xl", "wrap": True}
                 ] + rows
-            }
-        }
-    }
-
-# ======================
-# セット終了UI
-# ======================
-def end_menu(category, level, correct_count):
-    return {
-        "type": "flex",
-        "altText": "セット終了",
-        "contents": {
-            "type": "bubble",
-            "body": {
-                "type": "box",
-                "layout": "vertical",
-                "spacing": "md",
-                "contents": [
-                    {"type": "text", "text": "🎉 セット終了！", "weight": "bold", "size": "lg"},
-                    {"type": "text", "text": f"正解数：{correct_count} / 10"},
-                    {
-                        "type": "button",
-                        "action": {"type": "message", "label": "🔁 同じカテゴリ・レベルで続ける", "text": f"続ける::{category}::{level}"},
-                        "style": "primary",
-                        "margin": "lg"
-                    },
-                    {
-                        "type": "button",
-                        "action": {"type": "message", "label": "🏠 カテゴリ選択に戻る", "text": "カテゴリへ戻る"},
-                        "style": "secondary",
-                        "margin": "md"
-                    }
-                ]
             }
         }
     }
@@ -296,26 +299,26 @@ def callback():
         reply_token = event["replyToken"]
         text = event["message"]["text"]
 
-        if text == "カテゴリへ戻る":
-            user_state.pop(user_id, None)
-            send_reply(reply_token, [category_menu()])
-            continue
-
-        if text.startswith("続ける::"):
-            _, category, level = text.split("::")
-            user_state[user_id] = {
-                "category": category,
-                "level": level,
-                "current_set": build_question_set(user_id, category, level),
-                "index": 0,
-                "correct_count": 0
-            }
-            send_reply(reply_token, [create_question(user_id)])
-            continue
-
         if text == "やめる":
             user_state.pop(user_id, None)
             send_reply(reply_token, [category_menu()])
+            continue
+
+        if text == "次へ" and user_id in user_state:
+            state = user_state[user_id]
+            state["index"] += 1
+
+            if state["index"] >= 10:
+                send_reply(reply_token, [
+                    {
+                        "type": "text",
+                        "text": f"🎉 セット終了！\n正解数：{state['correct_count']} / 10"
+                    },
+                    category_menu()
+                ])
+                user_state.pop(user_id, None)
+            else:
+                send_reply(reply_token, [create_question(user_id)])
             continue
 
         if text in words:
@@ -335,6 +338,7 @@ def callback():
 
         if user_id in user_state and "current_set" in user_state[user_id]:
             state = user_state[user_id]
+
             if text in state.get("choices", []):
                 correct = state["correct"]
                 category = state["category"]
@@ -363,23 +367,10 @@ def callback():
                 else:
                     streak_text = f"\n\n{fire} ({streak} / 5)\nあと{remain}回で習熟！"
 
-                result = result + streak_text
+                result += streak_text
                 result += build_learning_block(question, level, streak)
 
-                state["index"] += 1
-
-                if state["index"] >= 10:
-                    send_reply(reply_token, [
-                        {"type": "text", "text": result},
-                        end_menu(category, level, state["correct_count"])
-                    ])
-                    user_state.pop(user_id, None)
-                    continue
-
-                send_reply(reply_token, [
-                    {"type": "text", "text": result},
-                    create_question(user_id)
-                ])
+                send_reply(reply_token, [result_menu(result)])
                 continue
 
         send_reply(reply_token, [category_menu()])
