@@ -8,14 +8,21 @@ app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 
-# 単語リスト（あとで増やせる）
-words = [
-    {"jp": "こんにちは", "kr": "안녕하세요"},
-    {"jp": "ありがとう", "kr": "감사합니다"},
-    {"jp": "さようなら", "kr": "안녕히 가세요"},
-]
+# レベル別単語リスト
+words = {
+    "初級": [
+        {"jp": "こんにちは", "kr": "안녕하세요"},
+        {"jp": "ありがとう", "kr": "감사합니다"},
+        {"jp": "さようなら", "kr": "안녕히 가세요"},
+    ],
+    "中級": [
+        {"jp": "約束", "kr": "약속"},
+        {"jp": "経験", "kr": "경험"},
+        {"jp": "理由", "kr": "이유"},
+    ]
+}
 
-# ユーザーごとの正解を保存
+# ユーザー状態管理
 user_state = {}
 
 @app.route("/callback", methods=["POST"])
@@ -34,40 +41,67 @@ def callback():
                 "Authorization": f"Bearer {ACCESS_TOKEN}"
             }
 
-            # スタートで問題出題
-            if text == "スタート":
-                question = random.choice(words)
-                user_state[user_id] = question["kr"]
+            # レベル選択
+            if text in words.keys():
+                user_state[user_id] = {
+                    "level": text,
+                    "answer": None
+                }
 
                 data = {
                     "replyToken": reply_token,
                     "messages":[
                         {"type":"text",
-                         "text": f"{question['jp']} は韓国語で？"}
+                         "text": f"{text}レベルを選択しました。\n「スタート」と送ってください。"}
                     ]
                 }
 
+            # スタートで出題
+            elif text == "スタート":
+                if user_id in user_state and user_state[user_id]["level"]:
+                    level = user_state[user_id]["level"]
+                    question = random.choice(words[level])
+                    user_state[user_id]["answer"] = question["kr"]
+
+                    data = {
+                        "replyToken": reply_token,
+                        "messages":[
+                            {"type":"text",
+                             "text": f"{question['jp']} は韓国語で？"}
+                        ]
+                    }
+                else:
+                    data = {
+                        "replyToken": reply_token,
+                        "messages":[
+                            {"type":"text",
+                             "text": "まず「初級」または「中級」を選んでください。"}
+                        ]
+                    }
+
             # 回答チェック
-            elif user_id in user_state:
-                correct = user_state[user_id]
+            elif user_id in user_state and user_state[user_id]["answer"]:
+                correct = user_state[user_id]["answer"]
 
                 if text == correct:
                     message = "正解！🔥"
                 else:
                     message = f"違います。正解は {correct}"
 
+                user_state[user_id]["answer"] = None
+
                 data = {
                     "replyToken": reply_token,
                     "messages":[{"type":"text","text": message}]
                 }
 
-                # 問題リセット
-                del user_state[user_id]
-
             else:
                 data = {
                     "replyToken": reply_token,
-                    "messages":[{"type":"text","text":"「スタート」と送ってください"}]
+                    "messages":[
+                        {"type":"text",
+                         "text": "「初級」または「中級」を送ってください。"}
+                    ]
                 }
 
             requests.post(
