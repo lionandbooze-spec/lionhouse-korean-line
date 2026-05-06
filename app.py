@@ -45,7 +45,6 @@ def callback():
             "Authorization": f"Bearer {ACCESS_TOKEN}"
         }
 
-        # レベル選択で即スタート
         if text in words.keys():
             user_state[user_id] = {
                 "level": text,
@@ -57,17 +56,13 @@ def callback():
             }
             message = create_question(user_id)
 
-        # やめる
         elif text == "やめる" and user_id in user_state:
             user_state[user_id]["playing"] = False
-            message = level_menu("クイズを終了しました。レベルを選んでください。")
+            message = level_menu("クイズを終了しました。")
 
-        # 回答処理
         elif user_id in user_state and user_state[user_id].get("playing") and text in user_state[user_id]["choices"]:
 
             correct = user_state[user_id]["correct_answer"]
-            level = user_state[user_id]["level"]
-
             user_state[user_id]["question_count"] += 1
 
             if text == correct:
@@ -76,7 +71,6 @@ def callback():
             else:
                 result_text = f"違います。正解は {correct}"
 
-            # 5問終了
             if user_state[user_id]["question_count"] >= 5:
                 total = user_state[user_id]["question_count"]
                 correct_num = user_state[user_id]["correct_count"]
@@ -90,8 +84,7 @@ def callback():
                         f"{result_text}\n\n"
                         f"🎉 5問終了！\n"
                         f"正解数：{correct_num} / {total}\n"
-                        f"正答率：{accuracy}%\n\n"
-                        f"レベルを選んで再挑戦してください。"
+                        f"正答率：{accuracy}%"
                     ),
                     "quickReply": level_buttons()
                 }
@@ -148,7 +141,6 @@ def level_buttons():
             },
             {
                 "type": "action",
-                "label": "中級",
                 "action": {"type": "message", "label": "中級", "text": "中級"}
             }
         ]
@@ -158,16 +150,25 @@ def level_buttons():
 def create_question(user_id):
     level = user_state[user_id]["level"]
     question = random.choice(words[level])
-    correct = question["kr"]
 
-    wrong = [w["kr"] for w in words[level] if w["kr"] != correct]
+    # 日→韓 or 韓→日 ランダム
+    direction = random.choice(["jp_to_kr", "kr_to_jp"])
+
+    if direction == "jp_to_kr":
+        prompt = f"『{question['jp']}』は韓国語で？"
+        correct = question["kr"]
+        wrong = [w["kr"] for w in words[level] if w["kr"] != correct]
+    else:
+        prompt = f"『{question['kr']}』は日本語で？"
+        correct = question["jp"]
+        wrong = [w["jp"] for w in words[level] if w["jp"] != correct]
+
     choices = random.sample(wrong, 3) + [correct]
     random.shuffle(choices)
 
     user_state[user_id]["correct_answer"] = correct
     user_state[user_id]["choices"] = choices
 
-    # 2列レイアウト
     rows = []
     for i in range(0, 4, 2):
         rows.append({
@@ -180,7 +181,7 @@ def create_question(user_id):
             ]
         })
 
-    flex_message = {
+    return {
         "type": "flex",
         "altText": "クイズ問題",
         "contents": {
@@ -188,11 +189,11 @@ def create_question(user_id):
             "body": {
                 "type": "box",
                 "layout": "vertical",
-                "spacing": "md",
+                "spacing": "lg",
                 "contents": [
                     {
                         "type": "text",
-                        "text": f"{question['jp']} は韓国語で？",
+                        "text": prompt,
                         "weight": "bold",
                         "size": "lg"
                     }
@@ -201,17 +202,15 @@ def create_question(user_id):
                         "type": "button",
                         "action": {
                             "type": "message",
-                            "label": "練習をやめる",
+                            "label": "やめる",
                             "text": "やめる"
                         },
-                        "style": "secondary"
+                        "style": "link"
                     }
                 ]
             }
         }
     }
-
-    return flex_message
 
 
 def build_button(text):
@@ -223,6 +222,6 @@ def build_button(text):
             "text": text
         },
         "style": "primary",
-        "color": "#9ED9E8",
+        "color": "#6CC4A1",  # 目に優しいミントグリーン
         "flex": 1
     }
