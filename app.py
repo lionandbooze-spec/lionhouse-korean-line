@@ -8,9 +8,6 @@ app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 
-# ----------------------------
-# 単語データ
-# ----------------------------
 words = {
     "初級": [
         {"jp": "こんにちは", "kr": "안녕하세요"},
@@ -31,7 +28,7 @@ words = {
 user_state = {}
 
 # ----------------------------
-# LINE返信（デバッグ付き）
+# LINE返信
 # ----------------------------
 def reply(reply_token, messages):
     headers = {
@@ -39,7 +36,7 @@ def reply(reply_token, messages):
         "Authorization": f"Bearer {ACCESS_TOKEN}"
     }
 
-    response = requests.post(
+    res = requests.post(
         "https://api.line.me/v2/bot/message/reply",
         headers=headers,
         json={
@@ -48,64 +45,20 @@ def reply(reply_token, messages):
         }
     )
 
-    print("=== LINE Reply ===")
-    print("Status:", response.status_code)
-    print("Body:", response.text)
-    print("==================")
+    print("Reply status:", res.status_code)
+    print("Reply body:", res.text)
 
 # ----------------------------
-# コンパクトボタン
-# ----------------------------
-def build_button(text):
-    return {
-        "type": "button",
-        "action": {
-            "type": "message",
-            "label": text,
-            "text": text
-        },
-        "style": "primary",
-        "color": "#6CC4A1",
-        "height": "sm",
-        "flex": 1
-    }
-
-# ----------------------------
-# レベル選択（Flex横並び）
+# レベル選択（安全版）
 # ----------------------------
 def level_menu():
     return {
-        "type": "flex",
-        "altText": "レベル選択",
-        "contents": {
-            "type": "bubble",
-            "body": {
-                "type": "box",
-                "layout": "vertical",
-                "spacing": "lg",
-                "contents": [
-                    {
-                        "type": "text",
-                        "text": "レベルを選んでください",
-                        "weight": "bold",
-                        "size": "lg"
-                    },
-                    {
-                        "type": "box",
-                        "layout": "horizontal",
-                        "spacing": "md",
-                        "contents": [
-                            build_button("初級"),
-                            build_button("中級")
-                        ]
-                    }
-                ]
-            }
-        }
+        "type": "text",
+        "text": "レベルを選んでください\n\n初級\n中級"
     }
 
 # ----------------------------
-# 問題生成（2列表示）
+# 問題生成（安全Flex）
 # ----------------------------
 def create_question(user_id):
     level = user_state[user_id]["level"]
@@ -113,11 +66,11 @@ def create_question(user_id):
     direction = random.choice(["jp_to_kr", "kr_to_jp"])
 
     if direction == "jp_to_kr":
-        prompt = f"『{question['jp']}』は韓国語で？"
+        prompt = f"{question['jp']} は韓国語で？"
         correct = question["kr"]
         wrong = [w["kr"] for w in words[level] if w["kr"] != correct]
     else:
-        prompt = f"『{question['kr']}』は日本語で？"
+        prompt = f"{question['kr']} は日本語で？"
         correct = question["jp"]
         wrong = [w["jp"] for w in words[level] if w["jp"] != correct]
 
@@ -128,6 +81,7 @@ def create_question(user_id):
     user_state[user_id]["correct"] = correct
     user_state[user_id]["choices"] = choices
 
+    # ボタンを縦並び（最も安全）
     contents = [
         {
             "type": "text",
@@ -137,21 +91,15 @@ def create_question(user_id):
         }
     ]
 
-    # 2列ボタン
-    for i in range(0, len(choices), 2):
-        row = {
-            "type": "box",
-            "layout": "horizontal",
-            "spacing": "md",
-            "contents": []
-        }
-
-        row["contents"].append(build_button(choices[i]))
-
-        if i + 1 < len(choices):
-            row["contents"].append(build_button(choices[i + 1]))
-
-        contents.append(row)
+    for c in choices:
+        contents.append({
+            "type": "button",
+            "action": {
+                "type": "message",
+                "label": c,
+                "text": c
+            }
+        })
 
     contents.append({
         "type": "button",
@@ -159,20 +107,18 @@ def create_question(user_id):
             "type": "message",
             "label": "やめる",
             "text": "やめる"
-        },
-        "style": "secondary",
-        "height": "sm"
+        }
     })
 
     return {
         "type": "flex",
-        "altText": "クイズ問題",
+        "altText": "クイズ",
         "contents": {
             "type": "bubble",
             "body": {
                 "type": "box",
                 "layout": "vertical",
-                "spacing": "lg",
+                "spacing": "md",
                 "contents": contents
             }
         }
@@ -204,7 +150,6 @@ def callback():
 
         print("Received:", text)
 
-        # レベル選択
         if text in words:
             user_state[user_id] = {
                 "level": text,
@@ -217,13 +162,11 @@ def callback():
             reply(reply_token, [flex])
             continue
 
-        # やめる
         if text == "やめる" and user_id in user_state:
             user_state[user_id]["playing"] = False
             reply(reply_token, [level_menu()])
             continue
 
-        # 回答処理
         if user_id in user_state and user_state[user_id].get("playing"):
 
             if text in user_state[user_id]["choices"]:
@@ -232,23 +175,21 @@ def callback():
 
                 if text == user_state[user_id]["correct"]:
                     user_state[user_id]["score"] += 1
-                    result = "正解！🔥"
+                    result = "正解！"
                 else:
                     result = f"違います。正解は {user_state[user_id]['correct']}"
 
-                # 5問終了
                 if user_state[user_id]["count"] >= 5:
                     score = user_state[user_id]["score"]
                     total = user_state[user_id]["count"]
                     user_state[user_id]["playing"] = False
 
                     reply(reply_token, [
-                        {"type": "text", "text": f"{result}\n\n5問終了\n{score}/{total}"},
+                        {"type": "text", "text": f"{result}\n\n5問終了 {score}/{total}"},
                         level_menu()
                     ])
                     continue
 
-                # 次の問題
                 flex = create_question(user_id)
 
                 reply(reply_token, [
