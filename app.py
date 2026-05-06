@@ -38,10 +38,9 @@ def send_reply(reply_token, messages):
     )
 
 # ======================
-# カテゴリUI（縦並び）
+# カテゴリUI
 # ======================
 def category_menu():
-
     buttons = []
 
     for cat in words.keys():
@@ -79,10 +78,9 @@ def category_menu():
     }
 
 # ======================
-# レベルUI（縦並び）
+# レベルUI
 # ======================
 def level_menu(category):
-
     buttons = []
 
     for level in words[category].keys():
@@ -150,9 +148,13 @@ def build_question_set(user_id, category, level):
             group3.append(w)
 
     selected = []
-    selected += random.sample(group1, min(7, len(group1)))
-    selected += random.sample(group2, min(2, len(group2)))
-    selected += random.sample(group3, min(1, len(group3)))
+
+    if group1:
+        selected += random.sample(group1, min(7, len(group1)))
+    if group2:
+        selected += random.sample(group2, min(2, len(group2)))
+    if group3:
+        selected += random.sample(group3, min(1, len(group3)))
 
     while len(selected) < 10 and len(selected) < len(all_words):
         candidate = random.choice(all_words)
@@ -163,7 +165,7 @@ def build_question_set(user_id, category, level):
     return selected
 
 # ======================
-# 問題生成
+# 問題生成（4色ボタン）
 # ======================
 def create_question(user_id):
     state = user_state[user_id]
@@ -181,7 +183,8 @@ def create_question(user_id):
         pool = [w["jp"] for w in words[state["category"]][state["level"]]]
 
     pool = list(set(pool))
-    pool.remove(correct)
+    if correct in pool:
+        pool.remove(correct)
 
     choices = random.sample(pool, min(3, len(pool)))
     choices.append(correct)
@@ -190,19 +193,54 @@ def create_question(user_id):
     state["correct"] = correct
     state["choices"] = choices
 
-    quick_items = [{
-        "type": "action",
-        "action": {
-            "type": "message",
-            "label": c,
-            "text": c
+    colors = ["#4C8BF5", "#6CC4A1", "#F6B26B", "#C27BA0"]
+
+    rows = []
+    for i in range(0, len(choices), 2):
+        row = {
+            "type": "box",
+            "layout": "horizontal",
+            "spacing": "sm",
+            "contents": []
         }
-    } for c in choices]
+
+        for j in range(2):
+            if i + j < len(choices):
+                idx = i + j
+                row["contents"].append({
+                    "type": "button",
+                    "action": {
+                        "type": "message",
+                        "label": choices[idx],
+                        "text": choices[idx]
+                    },
+                    "style": "primary",
+                    "color": colors[idx],
+                    "flex": 1
+                })
+
+        rows.append(row)
 
     return {
-        "type": "text",
-        "text": prompt,
-        "quickReply": {"items": quick_items}
+        "type": "flex",
+        "altText": "クイズ問題",
+        "contents": {
+            "type": "bubble",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "lg",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": prompt,
+                        "weight": "bold",
+                        "size": "lg",
+                        "wrap": True
+                    }
+                ] + rows
+            }
+        }
     }
 
 # ======================
@@ -221,11 +259,13 @@ def callback():
         reply_token = event["replyToken"]
         text = event["message"]["text"]
 
+        # カテゴリ選択
         if text in words:
             user_state[user_id] = {"category": text}
             send_reply(reply_token, [level_menu(text)])
             continue
 
+        # レベル選択
         if user_id in user_state and "category" in user_state[user_id]:
             category = user_state[user_id]["category"]
 
@@ -233,9 +273,11 @@ def callback():
                 user_state[user_id]["level"] = text
                 user_state[user_id]["current_set"] = build_question_set(user_id, category, text)
                 user_state[user_id]["index"] = 0
+                user_state[user_id]["correct_count"] = 0
                 send_reply(reply_token, [create_question(user_id)])
                 continue
 
+        # 回答処理
         if user_id in user_state and "current_set" in user_state[user_id]:
             state = user_state[user_id]
 
@@ -251,6 +293,7 @@ def callback():
 
                 if text == correct:
                     streak += 1
+                    state["correct_count"] += 1
                     result = "正解！🔥"
                 else:
                     streak = max(0, streak - 2)
@@ -266,8 +309,15 @@ def callback():
 
                     send_reply(reply_token, [{
                         "type": "text",
-                        "text": f"{result}\n\n📊 習熟度：{percent}%\n（{mastered}/{total}習得）"
+                        "text": (
+                            f"{result}\n\n"
+                            f"🎉 セット終了！\n"
+                            f"正解数：{state['correct_count']} / 10\n\n"
+                            f"📊 習熟度：{percent}%\n"
+                            f"（{mastered}/{total}習得）"
+                        )
                     }, category_menu()])
+
                     del user_state[user_id]
                     continue
 
