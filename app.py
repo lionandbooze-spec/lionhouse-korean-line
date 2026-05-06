@@ -1,6 +1,5 @@
 from flask import Flask, request
 import requests
-import json
 import os
 import random
 
@@ -39,7 +38,7 @@ def reply(reply_token, messages):
         "Authorization": f"Bearer {ACCESS_TOKEN}"
     }
 
-    response = requests.post(
+    res = requests.post(
         "https://api.line.me/v2/bot/message/reply",
         headers=headers,
         json={
@@ -49,25 +48,41 @@ def reply(reply_token, messages):
     )
 
     print("=== LINE Reply ===")
-    print("Status:", response.status_code)
-    print("Body:", response.text)
+    print(res.status_code)
+    print(res.text)
     print("==================")
 
 # ----------------------------
-# ボタン作成（安全版）
+# PDF風ボタン
 # ----------------------------
-def build_button(text):
+def build_pdf_button(text, highlight=False):
+    bg = "#B7E2EE" if highlight else "#CDEBF3"
+
     return {
-        "type": "button",
+        "type": "box",
+        "layout": "vertical",
+        "paddingAll": "16px",
+        "backgroundColor": bg,
+        "cornerRadius": "18px",
+        "flex": 1,
         "action": {
             "type": "message",
             "label": text,
             "text": text
-        }
+        },
+        "contents": [
+            {
+                "type": "text",
+                "text": text,
+                "align": "center",
+                "color": "#3A4A63",
+                "weight": "bold"
+            }
+        ]
     }
 
 # ----------------------------
-# レベル選択（Flex）
+# レベル選択画面
 # ----------------------------
 def level_menu():
     return {
@@ -78,21 +93,23 @@ def level_menu():
             "body": {
                 "type": "box",
                 "layout": "vertical",
-                "spacing": "md",
+                "spacing": "lg",
+                "backgroundColor": "#EAF6FB",
                 "contents": [
                     {
                         "type": "text",
                         "text": "レベルを選んでください",
                         "weight": "bold",
-                        "size": "lg"
+                        "size": "lg",
+                        "color": "#3A4A63"
                     },
                     {
                         "type": "box",
                         "layout": "horizontal",
                         "spacing": "md",
                         "contents": [
-                            build_button("初級"),
-                            build_button("中級")
+                            build_pdf_button("初級"),
+                            build_pdf_button("中級")
                         ]
                     }
                 ]
@@ -101,7 +118,7 @@ def level_menu():
     }
 
 # ----------------------------
-# 問題生成（2列ボタン）
+# 問題生成
 # ----------------------------
 def create_question(user_id):
     level = user_state[user_id]["level"]
@@ -124,16 +141,19 @@ def create_question(user_id):
     user_state[user_id]["correct"] = correct
     user_state[user_id]["choices"] = choices
 
+    highlight = user_state[user_id].get("just_correct", False)
+    user_state[user_id]["just_correct"] = False
+
     contents = [
         {
             "type": "text",
             "text": prompt,
             "weight": "bold",
-            "size": "lg"
+            "size": "lg",
+            "color": "#3A4A63"
         }
     ]
 
-    # 2列表示
     for i in range(0, len(choices), 2):
         row = {
             "type": "box",
@@ -142,20 +162,32 @@ def create_question(user_id):
             "contents": []
         }
 
-        row["contents"].append(build_button(choices[i]))
+        row["contents"].append(build_pdf_button(choices[i], highlight))
 
         if i + 1 < len(choices):
-            row["contents"].append(build_button(choices[i + 1]))
+            row["contents"].append(build_pdf_button(choices[i + 1], highlight))
 
         contents.append(row)
 
     contents.append({
-        "type": "button",
+        "type": "box",
+        "layout": "vertical",
+        "paddingAll": "14px",
+        "backgroundColor": "#CDEBF3",
+        "cornerRadius": "18px",
         "action": {
             "type": "message",
-            "label": "やめる",
+            "label": "練習をやめる",
             "text": "やめる"
-        }
+        },
+        "contents": [
+            {
+                "type": "text",
+                "text": "練習をやめる",
+                "align": "center",
+                "color": "#3A4A63"
+            }
+        ]
     })
 
     return {
@@ -167,6 +199,7 @@ def create_question(user_id):
                 "type": "box",
                 "layout": "vertical",
                 "spacing": "lg",
+                "backgroundColor": "#EAF6FB",
                 "contents": contents
             }
         }
@@ -204,11 +237,11 @@ def callback():
                 "level": text,
                 "playing": True,
                 "count": 0,
-                "score": 0
+                "score": 0,
+                "just_correct": False
             }
 
-            flex = create_question(user_id)
-            reply(reply_token, [flex])
+            reply(reply_token, [create_question(user_id)])
             continue
 
         # やめる
@@ -226,6 +259,7 @@ def callback():
 
                 if text == user_state[user_id]["correct"]:
                     user_state[user_id]["score"] += 1
+                    user_state[user_id]["just_correct"] = True
                     result = "正解！🔥"
                 else:
                     result = f"違います。正解は {user_state[user_id]['correct']}"
@@ -241,15 +275,17 @@ def callback():
                     ])
                     continue
 
-                flex = create_question(user_id)
-
                 reply(reply_token, [
                     {"type": "text", "text": result},
-                    flex
+                    create_question(user_id)
                 ])
                 continue
 
-        # ★ 何を送っても必ずレベル選択を出す（既読だけ防止）
+        # 何を送ってもレベル選択表示
         reply(reply_token, [level_menu()])
 
     return "OK"
+
+
+if __name__ == "__main__":
+    app.run()
