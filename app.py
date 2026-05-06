@@ -45,7 +45,7 @@ def callback():
             "Authorization": f"Bearer {ACCESS_TOKEN}"
         }
 
-        # レベル選択（即スタート）
+        # レベル選択で即スタート
         if text in words.keys():
             user_state[user_id] = {
                 "level": text,
@@ -64,6 +64,7 @@ def callback():
 
         # 回答処理
         elif user_id in user_state and user_state[user_id].get("playing") and text in user_state[user_id]["choices"]:
+
             correct = user_state[user_id]["correct_answer"]
             level = user_state[user_id]["level"]
 
@@ -71,9 +72,9 @@ def callback():
 
             if text == correct:
                 user_state[user_id]["correct_count"] += 1
-                result = "正解！🔥"
+                result_text = "正解！🔥"
             else:
-                result = f"違います。正解は {correct}"
+                result_text = f"違います。正解は {correct}"
 
             # 5問終了
             if user_state[user_id]["question_count"] >= 5:
@@ -86,11 +87,11 @@ def callback():
                 message = {
                     "type": "text",
                     "text": (
-                        f"{result}\n\n"
+                        f"{result_text}\n\n"
                         f"🎉 5問終了！\n"
                         f"正解数：{correct_num} / {total}\n"
                         f"正答率：{accuracy}%\n\n"
-                        f"もう一度挑戦するレベルを選んでください。"
+                        f"レベルを選んで再挑戦してください。"
                     ),
                     "quickReply": level_buttons()
                 }
@@ -101,7 +102,7 @@ def callback():
                 data = {
                     "replyToken": reply_token,
                     "messages": [
-                        {"type": "text", "text": result},
+                        {"type": "text", "text": result_text},
                         next_question
                     ]
                 }
@@ -113,7 +114,6 @@ def callback():
                 )
                 continue
 
-        # 初期状態
         else:
             message = level_menu()
 
@@ -148,6 +148,7 @@ def level_buttons():
             },
             {
                 "type": "action",
+                "label": "中級",
                 "action": {"type": "message", "label": "中級", "text": "中級"}
             }
         ]
@@ -166,20 +167,62 @@ def create_question(user_id):
     user_state[user_id]["correct_answer"] = correct
     user_state[user_id]["choices"] = choices
 
-    return {
-        "type": "text",
-        "text": f"{question['jp']} は韓国語で？",
-        "quickReply": {
-            "items": [
-                {
-                    "type": "action",
-                    "action": {"type": "message", "label": c, "text": c}
-                } for c in choices
-            ] + [
-                {
-                    "type": "action",
-                    "action": {"type": "message", "label": "やめる", "text": "やめる"}
-                }
+    # 2列レイアウト
+    rows = []
+    for i in range(0, 4, 2):
+        rows.append({
+            "type": "box",
+            "layout": "horizontal",
+            "spacing": "sm",
+            "contents": [
+                build_button(choices[i]),
+                build_button(choices[i+1])
             ]
+        })
+
+    flex_message = {
+        "type": "flex",
+        "altText": "クイズ問題",
+        "contents": {
+            "type": "bubble",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "md",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": f"{question['jp']} は韓国語で？",
+                        "weight": "bold",
+                        "size": "lg"
+                    }
+                ] + rows + [
+                    {
+                        "type": "button",
+                        "action": {
+                            "type": "message",
+                            "label": "練習をやめる",
+                            "text": "やめる"
+                        },
+                        "style": "secondary"
+                    }
+                ]
+            }
         }
+    }
+
+    return flex_message
+
+
+def build_button(text):
+    return {
+        "type": "button",
+        "action": {
+            "type": "message",
+            "label": text,
+            "text": text
+        },
+        "style": "primary",
+        "color": "#9ED9E8",
+        "flex": 1
     }
