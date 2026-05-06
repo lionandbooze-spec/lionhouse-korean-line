@@ -13,17 +13,18 @@ with open("words.json", "r", encoding="utf-8") as f:
 user_state = {}
 user_progress = {}
 
+# ======================
+# LINE返信
+# ======================
 def send_reply(reply_token, messages):
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {ACCESS_TOKEN}"
     }
-
     data = {
         "replyToken": reply_token,
         "messages": messages
     }
-
     requests.post(
         "https://api.line.me/v2/bot/message/reply",
         headers=headers,
@@ -98,10 +99,8 @@ def build_question_set(user_id, category, level):
 
     if user_id not in user_progress:
         user_progress[user_id] = {}
-
     if category not in user_progress[user_id]:
         user_progress[user_id][category] = {}
-
     if level not in user_progress[user_id][category]:
         user_progress[user_id][category][level] = {}
 
@@ -121,9 +120,12 @@ def build_question_set(user_id, category, level):
             group3.append(w)
 
     selected = []
-    if group1: selected += random.sample(group1, min(7, len(group1)))
-    if group2: selected += random.sample(group2, min(2, len(group2)))
-    if group3: selected += random.sample(group3, min(1, len(group3)))
+    if group1:
+        selected += random.sample(group1, min(7, len(group1)))
+    if group2:
+        selected += random.sample(group2, min(2, len(group2)))
+    if group3:
+        selected += random.sample(group3, min(1, len(group3)))
 
     while len(selected) < 10 and len(selected) < len(all_words):
         candidate = random.choice(all_words)
@@ -205,7 +207,6 @@ def create_question(user_id):
 # セット終了UI
 # ======================
 def end_menu(category, level, correct_count, percent, mastered, total):
-
     return {
         "type": "flex",
         "altText": "セット終了",
@@ -254,8 +255,7 @@ def callback():
         text = event["message"]["text"]
 
         if text == "カテゴリへ戻る":
-            if user_id in user_state:
-                del user_state[user_id]
+            user_state.pop(user_id, None)
             send_reply(reply_token, [category_menu()])
             continue
 
@@ -272,8 +272,7 @@ def callback():
             continue
 
         if text == "やめる":
-            if user_id in user_state:
-                del user_state[user_id]
+            user_state.pop(user_id, None)
             send_reply(reply_token, [category_menu()])
             continue
 
@@ -315,6 +314,18 @@ def callback():
                     result = f"違います。正解は {correct}"
 
                 progress[key] = streak
+
+                # 🔥 streak表示
+                fire = "🔥" * streak
+                remain = max(0, 5 - streak)
+
+                if streak >= 5:
+                    streak_text = "\n\n🔥🔥🔥🔥🔥 (5 / 5)\n習熟達成！🎉"
+                else:
+                    streak_text = f"\n\n{fire} ({streak} / 5)\nあと{remain}回で習熟！"
+
+                result = result + streak_text
+
                 state["index"] += 1
 
                 if state["index"] >= 10:
@@ -327,7 +338,7 @@ def callback():
                         end_menu(category, level, state["correct_count"], percent, mastered, total)
                     ])
 
-                    del user_state[user_id]
+                    user_state.pop(user_id, None)
                     continue
 
                 send_reply(reply_token, [
