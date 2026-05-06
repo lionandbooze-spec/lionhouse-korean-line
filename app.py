@@ -8,6 +8,9 @@ app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 
+# ----------------------------
+# 単語データ
+# ----------------------------
 words = {
     "初級": [
         {"jp": "こんにちは", "kr": "안녕하세요"},
@@ -28,7 +31,7 @@ words = {
 user_state = {}
 
 # ----------------------------
-# LINE返信
+# LINE返信（デバッグ付き）
 # ----------------------------
 def reply(reply_token, messages):
     headers = {
@@ -36,7 +39,7 @@ def reply(reply_token, messages):
         "Authorization": f"Bearer {ACCESS_TOKEN}"
     }
 
-    res = requests.post(
+    response = requests.post(
         "https://api.line.me/v2/bot/message/reply",
         headers=headers,
         json={
@@ -45,20 +48,60 @@ def reply(reply_token, messages):
         }
     )
 
-    print("Reply status:", res.status_code)
-    print("Reply body:", res.text)
+    print("=== LINE Reply ===")
+    print("Status:", response.status_code)
+    print("Body:", response.text)
+    print("==================")
 
 # ----------------------------
-# レベル選択（安全版）
+# ボタン作成（安全版）
 # ----------------------------
-def level_menu():
+def build_button(text):
     return {
-        "type": "text",
-        "text": "レベルを選んでください\n\n初級\n中級"
+        "type": "button",
+        "action": {
+            "type": "message",
+            "label": text,
+            "text": text
+        }
     }
 
 # ----------------------------
-# 問題生成（安全Flex）
+# レベル選択（Flex）
+# ----------------------------
+def level_menu():
+    return {
+        "type": "flex",
+        "altText": "レベル選択",
+        "contents": {
+            "type": "bubble",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "md",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": "レベルを選んでください",
+                        "weight": "bold",
+                        "size": "lg"
+                    },
+                    {
+                        "type": "box",
+                        "layout": "horizontal",
+                        "spacing": "md",
+                        "contents": [
+                            build_button("初級"),
+                            build_button("中級")
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+
+# ----------------------------
+# 問題生成（2列ボタン）
 # ----------------------------
 def create_question(user_id):
     level = user_state[user_id]["level"]
@@ -66,11 +109,11 @@ def create_question(user_id):
     direction = random.choice(["jp_to_kr", "kr_to_jp"])
 
     if direction == "jp_to_kr":
-        prompt = f"{question['jp']} は韓国語で？"
+        prompt = f"『{question['jp']}』は韓国語で？"
         correct = question["kr"]
         wrong = [w["kr"] for w in words[level] if w["kr"] != correct]
     else:
-        prompt = f"{question['kr']} は日本語で？"
+        prompt = f"『{question['kr']}』は日本語で？"
         correct = question["jp"]
         wrong = [w["jp"] for w in words[level] if w["jp"] != correct]
 
@@ -81,7 +124,6 @@ def create_question(user_id):
     user_state[user_id]["correct"] = correct
     user_state[user_id]["choices"] = choices
 
-    # ボタンを縦並び（最も安全）
     contents = [
         {
             "type": "text",
@@ -91,15 +133,21 @@ def create_question(user_id):
         }
     ]
 
-    for c in choices:
-        contents.append({
-            "type": "button",
-            "action": {
-                "type": "message",
-                "label": c,
-                "text": c
-            }
-        })
+    # 2列表示
+    for i in range(0, len(choices), 2):
+        row = {
+            "type": "box",
+            "layout": "horizontal",
+            "spacing": "md",
+            "contents": []
+        }
+
+        row["contents"].append(build_button(choices[i]))
+
+        if i + 1 < len(choices):
+            row["contents"].append(build_button(choices[i + 1]))
+
+        contents.append(row)
 
     contents.append({
         "type": "button",
@@ -118,7 +166,7 @@ def create_question(user_id):
             "body": {
                 "type": "box",
                 "layout": "vertical",
-                "spacing": "md",
+                "spacing": "lg",
                 "contents": contents
             }
         }
@@ -150,6 +198,7 @@ def callback():
 
         print("Received:", text)
 
+        # レベル選択
         if text in words:
             user_state[user_id] = {
                 "level": text,
@@ -162,11 +211,13 @@ def callback():
             reply(reply_token, [flex])
             continue
 
+        # やめる
         if text == "やめる" and user_id in user_state:
             user_state[user_id]["playing"] = False
             reply(reply_token, [level_menu()])
             continue
 
+        # 回答処理
         if user_id in user_state and user_state[user_id].get("playing"):
 
             if text in user_state[user_id]["choices"]:
@@ -175,7 +226,7 @@ def callback():
 
                 if text == user_state[user_id]["correct"]:
                     user_state[user_id]["score"] += 1
-                    result = "正解！"
+                    result = "正解！🔥"
                 else:
                     result = f"違います。正解は {user_state[user_id]['correct']}"
 
@@ -196,5 +247,9 @@ def callback():
                     {"type": "text", "text": result},
                     flex
                 ])
+                continue
+
+        # ★ 何を送っても必ずレベル選択を出す（既読だけ防止）
+        reply(reply_token, [level_menu()])
 
     return "OK"
