@@ -14,9 +14,6 @@ ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 with open("words.json", "r", encoding="utf-8") as f:
     words = json.load(f)
 
-# ======================
-# ユーザーデータ
-# ======================
 user_state = {}
 user_progress = {}
 
@@ -41,95 +38,84 @@ def send_reply(reply_token, messages):
     )
 
 # ======================
-# カテゴリUI（色付きFlex）
+# カテゴリUI（縦並び）
 # ======================
 def category_menu():
 
-    colors = {
-        "🏠 日常": "#FFF4E5",
-        "🌍 自然・身体": "#E6F4EA",
-        "⏰ 時間・数": "#E8F0FE",
-        "🧩 文法": "#FCE8E6",
-        "💬 表現": "#F3E8FD"
-    }
-
-    bubbles = []
+    buttons = []
 
     for cat in words.keys():
-        bubble = {
-            "type": "bubble",
-            "body": {
-                "type": "box",
-                "layout": "vertical",
-                "paddingAll": "25px",
-                "backgroundColor": colors.get(cat, "#F2F2F2"),
-                "contents": [
-                    {
-                        "type": "text",
-                        "text": cat,
-                        "weight": "bold",
-                        "size": "xl",
-                        "align": "center",
-                        "color": "#333333"
-                    }
-                ]
-            },
+        buttons.append({
+            "type": "button",
             "action": {
                 "type": "message",
                 "label": cat,
                 "text": cat
-            }
-        }
-        bubbles.append(bubble)
+            },
+            "style": "primary",
+            "color": "#6CC4A1",
+            "margin": "md"
+        })
 
     return {
         "type": "flex",
         "altText": "カテゴリ選択",
         "contents": {
-            "type": "carousel",
-            "contents": bubbles
-        }
-    }
-
-# ======================
-# レベルUI（Flex）
-# ======================
-def level_menu(category):
-
-    bubbles = []
-
-    for level in words[category].keys():
-        bubble = {
             "type": "bubble",
             "body": {
                 "type": "box",
                 "layout": "vertical",
-                "paddingAll": "30px",
-                "backgroundColor": "#F2F2F2",
+                "spacing": "md",
                 "contents": [
                     {
                         "type": "text",
-                        "text": level,
+                        "text": "カテゴリを選んでください",
                         "weight": "bold",
-                        "size": "xl",
-                        "align": "center"
+                        "size": "lg"
                     }
-                ]
-            },
+                ] + buttons
+            }
+        }
+    }
+
+# ======================
+# レベルUI（縦並び）
+# ======================
+def level_menu(category):
+
+    buttons = []
+
+    for level in words[category].keys():
+        buttons.append({
+            "type": "button",
             "action": {
                 "type": "message",
                 "label": level,
                 "text": level
-            }
-        }
-        bubbles.append(bubble)
+            },
+            "style": "primary",
+            "color": "#4C8BF5",
+            "margin": "md"
+        })
 
     return {
         "type": "flex",
         "altText": "レベル選択",
         "contents": {
-            "type": "carousel",
-            "contents": bubbles
+            "type": "bubble",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "md",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": f"{category} のレベルを選んでください",
+                        "weight": "bold",
+                        "size": "lg"
+                    }
+                ] + buttons
+            }
         }
     }
 
@@ -150,9 +136,7 @@ def build_question_set(user_id, category, level):
 
     progress = user_progress[user_id][category][level]
 
-    group1 = []
-    group2 = []
-    group3 = []
+    group1, group2, group3 = [], [], []
 
     for w in all_words:
         key = w["kr"]
@@ -190,33 +174,30 @@ def create_question(user_id):
     if direction == "jp_to_kr":
         prompt = f"『{question['jp']}』は韓国語で？"
         correct = question["kr"]
-        choices = [w["kr"] for w in words[state["category"]][state["level"]]]
+        pool = [w["kr"] for w in words[state["category"]][state["level"]]]
     else:
         prompt = f"『{question['kr']}』は日本語で？"
         correct = question["jp"]
-        choices = [w["jp"] for w in words[state["category"]][state["level"]]]
+        pool = [w["jp"] for w in words[state["category"]][state["level"]]]
 
-    choices = list(set(choices))
-    if correct in choices:
-        choices.remove(correct)
+    pool = list(set(pool))
+    pool.remove(correct)
 
-    choices = random.sample(choices, min(3, len(choices)))
+    choices = random.sample(pool, min(3, len(pool)))
     choices.append(correct)
     random.shuffle(choices)
 
     state["correct"] = correct
     state["choices"] = choices
 
-    quick_items = [
-        {
-            "type": "action",
-            "action": {
-                "type": "message",
-                "label": c,
-                "text": c
-            }
-        } for c in choices
-    ]
+    quick_items = [{
+        "type": "action",
+        "action": {
+            "type": "message",
+            "label": c,
+            "text": c
+        }
+    } for c in choices]
 
     return {
         "type": "text",
@@ -240,13 +221,11 @@ def callback():
         reply_token = event["replyToken"]
         text = event["message"]["text"]
 
-        # カテゴリ選択
         if text in words:
             user_state[user_id] = {"category": text}
             send_reply(reply_token, [level_menu(text)])
             continue
 
-        # レベル選択
         if user_id in user_state and "category" in user_state[user_id]:
             category = user_state[user_id]["category"]
 
@@ -257,7 +236,6 @@ def callback():
                 send_reply(reply_token, [create_question(user_id)])
                 continue
 
-        # 回答処理
         if user_id in user_state and "current_set" in user_state[user_id]:
             state = user_state[user_id]
 
@@ -268,7 +246,6 @@ def callback():
                 question = state["current_set"][state["index"]]
 
                 key = question["kr"]
-
                 progress = user_progress[user_id][category][level]
                 streak = progress.get(key, 0)
 
@@ -280,7 +257,6 @@ def callback():
                     result = f"違います。正解は {correct}"
 
                 progress[key] = streak
-
                 state["index"] += 1
 
                 if state["index"] >= 10:
@@ -301,7 +277,6 @@ def callback():
                 ])
                 continue
 
-        # 初期表示
         send_reply(reply_token, [category_menu()])
 
     return "OK"
