@@ -8,7 +8,6 @@ app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 
-# レベル別単語リスト
 words = {
     "初級": [
         {"jp": "こんにちは", "kr": "안녕하세요"},
@@ -46,8 +45,12 @@ def callback():
             "Authorization": f"Bearer {ACCESS_TOKEN}"
         }
 
+        # 初期表示（レベル選択）
+        if user_id not in user_state:
+            message = level_menu()
+
         # レベル選択
-        if text in words.keys():
+        elif text in words.keys():
             user_state[user_id] = {
                 "level": text,
                 "playing": False,
@@ -56,93 +59,70 @@ def callback():
                 "correct_answer": None,
                 "choices": []
             }
-
-            message = {
-                "type": "text",
-                "text": f"{text}レベルを選択しました。\n「スタート」と送ってください。"
-            }
+            message = start_menu(text)
 
         # スタート
         elif text == "スタート":
-            if user_id in user_state:
-                user_state[user_id]["playing"] = True
-                user_state[user_id]["question_count"] = 0
-                user_state[user_id]["correct_count"] = 0
-                message = create_question(user_id)
-            else:
-                message = {
-                    "type": "text",
-                    "text": "まず「初級」または「中級」を選んでください。"
-                }
+            user_state[user_id]["playing"] = True
+            user_state[user_id]["question_count"] = 0
+            user_state[user_id]["correct_count"] = 0
+            message = create_question(user_id)
+
+        # やめる
+        elif text == "やめる":
+            user_state[user_id]["playing"] = False
+            message = level_menu("クイズを終了しました。")
 
         # 回答処理
-        elif user_id in user_state and user_state[user_id].get("playing"):
-
+        elif user_state[user_id].get("playing") and text in user_state[user_id]["choices"]:
             correct = user_state[user_id]["correct_answer"]
             level = user_state[user_id]["level"]
 
-            if text in user_state[user_id]["choices"]:
-                user_state[user_id]["question_count"] += 1
+            user_state[user_id]["question_count"] += 1
 
-                if text == correct:
-                    user_state[user_id]["correct_count"] += 1
-                    result = "正解！🔥"
-                else:
-                    result = f"違います。正解は {correct}"
-
-                # 5問終了
-                if user_state[user_id]["question_count"] >= 5:
-                    total = user_state[user_id]["question_count"]
-                    correct_num = user_state[user_id]["correct_count"]
-                    accuracy = int((correct_num / total) * 100)
-
-                    user_state[user_id]["playing"] = False
-
-                    message = {
-                        "type": "text",
-                        "text": (
-                            f"{result}\n\n"
-                            f"🎉 5問終了！\n"
-                            f"正解数：{correct_num} / {total}\n"
-                            f"正答率：{accuracy}%\n\n"
-                            f"もう一度やる場合は「スタート」と送ってください。"
-                        )
-                    }
-
-                else:
-                    next_question = create_question(user_id)
-                    message = {
-                        "type": "text",
-                        "text": result
-                    }
-
-                    # 2メッセージ送る（結果＋次の問題）
-                    data = {
-                        "replyToken": reply_token,
-                        "messages": [
-                            message,
-                            next_question
-                        ]
-                    }
-
-                    requests.post(
-                        "https://api.line.me/v2/bot/message/reply",
-                        headers=headers,
-                        data=json.dumps(data)
-                    )
-                    continue
-
+            if text == correct:
+                user_state[user_id]["correct_count"] += 1
+                result = "正解！🔥"
             else:
+                result = f"違います。正解は {correct}"
+
+            if user_state[user_id]["question_count"] >= 5:
+                total = user_state[user_id]["question_count"]
+                correct_num = user_state[user_id]["correct_count"]
+                accuracy = int((correct_num / total) * 100)
+
+                user_state[user_id]["playing"] = False
+
                 message = {
                     "type": "text",
-                    "text": "下のボタンから選んでください。"
+                    "text": (
+                        f"{result}\n\n"
+                        f"🎉 5問終了！\n"
+                        f"正解数：{correct_num} / {total}\n"
+                        f"正答率：{accuracy}%"
+                    ),
+                    "quickReply": level_buttons()
+                }
+            else:
+                next_question = create_question(user_id)
+
+                data = {
+                    "replyToken": reply_token,
+                    "messages": [
+                        {"type": "text", "text": result},
+                        next_question
+                    ]
                 }
 
+                requests.post(
+                    "https://api.line.me/v2/bot/message/reply",
+                    headers=headers,
+                    data=json.dumps(data)
+                )
+                continue
+
         else:
-            message = {
-                "type": "text",
-                "text": "「初級」または「中級」を送ってください。"
-            }
+            message = level_menu()
 
         data = {
             "replyToken": reply_token,
@@ -156,6 +136,48 @@ def callback():
         )
 
     return "OK"
+
+
+def level_menu(text="レベルを選んでください。"):
+    return {
+        "type": "text",
+        "text": text,
+        "quickReply": level_buttons()
+    }
+
+
+def level_buttons():
+    return {
+        "items": [
+            {
+                "type": "action",
+                "action": {"type": "message", "label": "初級", "text": "初級"}
+            },
+            {
+                "type": "action",
+                "action": {"type": "message", "label": "中級", "text": "中級"}
+            }
+        ]
+    }
+
+
+def start_menu(level):
+    return {
+        "type": "text",
+        "text": f"{level}レベルを選択しました。",
+        "quickReply": {
+            "items": [
+                {
+                    "type": "action",
+                    "action": {"type": "message", "label": "スタート", "text": "スタート"}
+                },
+                {
+                    "type": "action",
+                    "action": {"type": "message", "label": "やめる", "text": "やめる"}
+                }
+            ]
+        }
+    }
 
 
 def create_question(user_id):
@@ -177,12 +199,13 @@ def create_question(user_id):
             "items": [
                 {
                     "type": "action",
-                    "action": {
-                        "type": "message",
-                        "label": c,
-                        "text": c
-                    }
+                    "action": {"type": "message", "label": c, "text": c}
                 } for c in choices
+            ] + [
+                {
+                    "type": "action",
+                    "action": {"type": "message", "label": "やめる", "text": "やめる"}
+                }
             ]
         }
     }
