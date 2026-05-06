@@ -136,6 +136,50 @@ def build_question_set(user_id, category, level):
     return selected
 
 # ======================
+# 教材表示ブロック
+# ======================
+def build_learning_block(word, level, streak):
+    if streak < 2:
+        return ""
+
+    text_block = "\n\n"
+
+    if word["type"] == "verb":
+        conj = word.get("conjugation", {})
+        if level == "基礎":
+            section = conj.get("basic", {})
+        elif level == "応用":
+            section = conj.get("intermediate", {})
+        else:
+            section = conj.get("advanced", {})
+
+        if section:
+            text_block += "🔄 表現\n"
+            for key, value in section.items():
+                if key == "conversation":
+                    text_block += "\n💬 会話\n"
+                    for line in value:
+                        text_block += f"{line}\n"
+                else:
+                    text_block += f"{value[0]}（{value[1]}）\n"
+
+    elif word["type"] in ["noun", "adjective"]:
+        example = word.get("example", {})
+        section = example.get(
+            "basic" if level == "基礎"
+            else "intermediate" if level == "応用"
+            else "advanced",
+            {}
+        )
+
+        if section:
+            text_block += "📘 例文\n"
+            text_block += f"{section['kr']}\n"
+            text_block += f"（{section['jp']}）\n"
+
+    return text_block
+
+# ======================
 # 問題生成
 # ======================
 def create_question(user_id):
@@ -206,7 +250,7 @@ def create_question(user_id):
 # ======================
 # セット終了UI
 # ======================
-def end_menu(category, level, correct_count, percent, mastered, total):
+def end_menu(category, level, correct_count):
     return {
         "type": "flex",
         "altText": "セット終了",
@@ -219,8 +263,6 @@ def end_menu(category, level, correct_count, percent, mastered, total):
                 "contents": [
                     {"type": "text", "text": "🎉 セット終了！", "weight": "bold", "size": "lg"},
                     {"type": "text", "text": f"正解数：{correct_count} / 10"},
-                    {"type": "text", "text": f"習熟度：{percent}%"},
-                    {"type": "text", "text": f"（{mastered}/{total}習得）"},
                     {
                         "type": "button",
                         "action": {"type": "message", "label": "🔁 同じカテゴリ・レベルで続ける", "text": f"続ける::{category}::{level}"},
@@ -283,7 +325,6 @@ def callback():
 
         if user_id in user_state and "category" in user_state[user_id]:
             category = user_state[user_id]["category"]
-
             if text in words[category]:
                 user_state[user_id]["level"] = text
                 user_state[user_id]["current_set"] = build_question_set(user_id, category, text)
@@ -294,7 +335,6 @@ def callback():
 
         if user_id in user_state and "current_set" in user_state[user_id]:
             state = user_state[user_id]
-
             if text in state.get("choices", []):
                 correct = state["correct"]
                 category = state["category"]
@@ -315,7 +355,6 @@ def callback():
 
                 progress[key] = streak
 
-                # 🔥 streak表示
                 fire = "🔥" * streak
                 remain = max(0, 5 - streak)
 
@@ -325,19 +364,15 @@ def callback():
                     streak_text = f"\n\n{fire} ({streak} / 5)\nあと{remain}回で習熟！"
 
                 result = result + streak_text
+                result += build_learning_block(question, level, streak)
 
                 state["index"] += 1
 
                 if state["index"] >= 10:
-                    mastered = sum(1 for v in progress.values() if v >= 5)
-                    total = len(words[category][level])
-                    percent = int((mastered / total) * 100) if total > 0 else 0
-
                     send_reply(reply_token, [
                         {"type": "text", "text": result},
-                        end_menu(category, level, state["correct_count"], percent, mastered, total)
+                        end_menu(category, level, state["correct_count"])
                     ])
-
                     user_state.pop(user_id, None)
                     continue
 
