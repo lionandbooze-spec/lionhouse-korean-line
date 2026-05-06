@@ -41,39 +41,100 @@ def send_reply(reply_token, messages):
     )
 
 # ======================
-# メニューUI
+# カテゴリUI（色付きFlex）
 # ======================
+def category_menu():
 
-def category_menu(text="カテゴリを選んでください"):
-    items = []
+    colors = {
+        "🏠 日常": "#FFF4E5",
+        "🌍 自然・身体": "#E6F4EA",
+        "⏰ 時間・数": "#E8F0FE",
+        "🧩 文法": "#FCE8E6",
+        "💬 表現": "#F3E8FD"
+    }
+
+    bubbles = []
+
     for cat in words.keys():
-        items.append({
-            "type": "action",
-            "action": {"type": "message", "label": cat, "text": cat}
-        })
+        bubble = {
+            "type": "bubble",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "paddingAll": "25px",
+                "backgroundColor": colors.get(cat, "#F2F2F2"),
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": cat,
+                        "weight": "bold",
+                        "size": "xl",
+                        "align": "center",
+                        "color": "#333333"
+                    }
+                ]
+            },
+            "action": {
+                "type": "message",
+                "label": cat,
+                "text": cat
+            }
+        }
+        bubbles.append(bubble)
 
     return {
-        "type": "text",
-        "text": text,
-        "quickReply": {"items": items}
-    }
-
-def level_menu(category):
-    items = []
-    for level in words[category].keys():
-        items.append({
-            "type": "action",
-            "action": {"type": "message", "label": level, "text": level}
-        })
-
-    return {
-        "type": "text",
-        "text": f"{category} のレベルを選んでください",
-        "quickReply": {"items": items}
+        "type": "flex",
+        "altText": "カテゴリ選択",
+        "contents": {
+            "type": "carousel",
+            "contents": bubbles
+        }
     }
 
 # ======================
-# 出題セット生成
+# レベルUI（Flex）
+# ======================
+def level_menu(category):
+
+    bubbles = []
+
+    for level in words[category].keys():
+        bubble = {
+            "type": "bubble",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "paddingAll": "30px",
+                "backgroundColor": "#F2F2F2",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": level,
+                        "weight": "bold",
+                        "size": "xl",
+                        "align": "center"
+                    }
+                ]
+            },
+            "action": {
+                "type": "message",
+                "label": level,
+                "text": level
+            }
+        }
+        bubbles.append(bubble)
+
+    return {
+        "type": "flex",
+        "altText": "レベル選択",
+        "contents": {
+            "type": "carousel",
+            "contents": bubbles
+        }
+    }
+
+# ======================
+# セット生成（70/20/10）
 # ======================
 def build_question_set(user_id, category, level):
     all_words = words[category][level]
@@ -105,7 +166,6 @@ def build_question_set(user_id, category, level):
             group3.append(w)
 
     selected = []
-
     selected += random.sample(group1, min(7, len(group1)))
     selected += random.sample(group2, min(2, len(group2)))
     selected += random.sample(group3, min(1, len(group3)))
@@ -119,7 +179,7 @@ def build_question_set(user_id, category, level):
     return selected
 
 # ======================
-# 問題作成
+# 問題生成
 # ======================
 def create_question(user_id):
     state = user_state[user_id]
@@ -137,7 +197,9 @@ def create_question(user_id):
         choices = [w["jp"] for w in words[state["category"]][state["level"]]]
 
     choices = list(set(choices))
-    choices.remove(correct)
+    if correct in choices:
+        choices.remove(correct)
+
     choices = random.sample(choices, min(3, len(choices)))
     choices.append(correct)
     random.shuffle(choices)
@@ -145,21 +207,21 @@ def create_question(user_id):
     state["correct"] = correct
     state["choices"] = choices
 
+    quick_items = [
+        {
+            "type": "action",
+            "action": {
+                "type": "message",
+                "label": c,
+                "text": c
+            }
+        } for c in choices
+    ]
+
     return {
         "type": "text",
         "text": prompt,
-        "quickReply": {
-            "items": [
-                {
-                    "type": "action",
-                    "action": {
-                        "type": "message",
-                        "label": c,
-                        "text": c
-                    }
-                } for c in choices
-            ]
-        }
+        "quickReply": {"items": quick_items}
     }
 
 # ======================
@@ -178,15 +240,13 @@ def callback():
         reply_token = event["replyToken"]
         text = event["message"]["text"]
 
-        # ===== カテゴリ選択 =====
+        # カテゴリ選択
         if text in words:
-            user_state[user_id] = {
-                "category": text
-            }
+            user_state[user_id] = {"category": text}
             send_reply(reply_token, [level_menu(text)])
             continue
 
-        # ===== レベル選択 =====
+        # レベル選択
         if user_id in user_state and "category" in user_state[user_id]:
             category = user_state[user_id]["category"]
 
@@ -197,7 +257,7 @@ def callback():
                 send_reply(reply_token, [create_question(user_id)])
                 continue
 
-        # ===== 回答処理 =====
+        # 回答処理
         if user_id in user_state and "current_set" in user_state[user_id]:
             state = user_state[user_id]
 
@@ -230,7 +290,7 @@ def callback():
 
                     send_reply(reply_token, [{
                         "type": "text",
-                        "text": f"{result}\n\n習熟度：{percent}%\n（{mastered}/{total}習得）"
+                        "text": f"{result}\n\n📊 習熟度：{percent}%\n（{mastered}/{total}習得）"
                     }, category_menu()])
                     del user_state[user_id]
                     continue
