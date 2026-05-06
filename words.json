@@ -44,7 +44,28 @@
   },
 
   "🌍 自然・身体": {
-    "基礎": [],
+    "基礎": [
+      { "kr": "하늘", "jp": "空", "type": "noun", "example": { "basic": { "kr": "하늘이 파래요", "jp": "空が青いです" } } },
+      { "kr": "산", "jp": "山", "type": "noun", "example": { "basic": { "kr": "산이 높아요", "jp": "山が高いです" } } },
+      { "kr": "바다", "jp": "海", "type": "noun", "example": { "basic": { "kr": "바다가 예뻐요", "jp": "海がきれいです" } } },
+      { "kr": "비", "jp": "雨", "type": "noun", "example": { "basic": { "kr": "비가 와요", "jp": "雨が降ります" } } },
+      { "kr": "눈", "jp": "雪", "type": "noun", "example": { "basic": { "kr": "눈이 와요", "jp": "雪が降ります" } } },
+      { "kr": "바람", "jp": "風", "type": "noun", "example": { "basic": { "kr": "바람이 불어요", "jp": "風が吹きます" } } },
+      { "kr": "태양", "jp": "太陽", "type": "noun", "example": { "basic": { "kr": "태양이 밝아요", "jp": "太陽が明るいです" } } },
+      { "kr": "달", "jp": "月", "type": "noun", "example": { "basic": { "kr": "달이 보여요", "jp": "月が見えます" } } },
+      { "kr": "날씨", "jp": "天気", "type": "noun", "example": { "basic": { "kr": "날씨가 좋아요", "jp": "天気が良いです" } } },
+
+      { "kr": "몸", "jp": "体", "type": "noun", "example": { "basic": { "kr": "몸이 아파요", "jp": "体が痛いです" } } },
+      { "kr": "머리", "jp": "頭", "type": "noun", "example": { "basic": { "kr": "머리가 아파요", "jp": "頭が痛いです" } } },
+      { "kr": "손", "jp": "手", "type": "noun", "example": { "basic": { "kr": "손이 차가워요", "jp": "手が冷たいです" } } },
+      { "kr": "발", "jp": "足", "type": "noun", "example": { "basic": { "kr": "발이 아파요", "jp": "足が痛いです" } } },
+      { "kr": "귀", "jp": "耳", "type": "noun", "example": { "basic": { "kr": "귀가 아파요", "jp": "耳が痛いです" } } },
+      { "kr": "입", "jp": "口", "type": "noun", "example": { "basic": { "kr": "입이 커요", "jp": "口が大きいです" } } },
+
+      { "kr": "아프다", "jp": "痛い", "type": "adjective", "example": { "basic": { "kr": "배가 아파요", "jp": "お腹が痛いです" } } },
+      { "kr": "덥다", "jp": "暑い", "type": "adjective", "example": { "basic": { "kr": "오늘 더워요", "jp": "今日は暑いです" } } },
+      { "kr": "춥다", "jp": "寒い", "type": "adjective", "example": { "basic": { "kr": "겨울이 추워요", "jp": "冬が寒いです" } } }
+    ],
     "応用": [],
     "実践": []
   },
