@@ -9,9 +9,11 @@ app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 
-# ----------------------
-# 単語データ
-# ----------------------
+BASE_AUDIO_URL = "https://raw.githubusercontent.com/lionandbooze-spec/lionhouse-korean-line/main/audio/"
+
+# ---------------------
+# 単語
+# ---------------------
 words = {
     "初級": [
         {"jp": "こんにちは", "kr": "안녕하세요"},
@@ -29,269 +31,183 @@ words = {
     ]
 }
 
-# ----------------------
-# 音声対応
-# ----------------------
 filename_map = {
-    "안녕하세요": "안녕하세요.mp3",
-    "감사합니다": "감사합니다.mp3",
-    "안녕히 가세요": "안녕히 가세요.mp3",
-    "네": "네.mp3",
-    "아니요": "아니요.mp3",
-    "약속": "약속.mp3",
-    "경험": "경험.mp3",
-    "이유": "이유.mp3",
-    "준비": "준비.mp3",
-    "선택": "선택.mp3",
+    w["kr"]: f"{w['kr']}.mp3"
+    for level in words.values()
+    for w in level
 }
-
-BASE_AUDIO_URL = "https://raw.githubusercontent.com/lionandbooze-spec/lionhouse-korean-line/main/audio/"
 
 user_state = {}
 
-# ----------------------
+# ---------------------
 # LINE reply
-# ----------------------
-def send_reply(reply_token, messages):
+# ---------------------
+def reply(reply_token, messages):
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {ACCESS_TOKEN}"
     }
 
-    data = {
-        "replyToken": reply_token,
-        "messages": messages
-    }
-
-    res = requests.post(
+    requests.post(
         "https://api.line.me/v2/bot/message/reply",
         headers=headers,
-        data=json.dumps(data)
+        data=json.dumps({
+            "replyToken": reply_token,
+            "messages": messages
+        })
     )
 
-    print("Reply:", res.status_code)
-    print(res.text)
-
-
-# ----------------------
-# LINE push（音声）
-# ----------------------
+# ---------------------
+# LINE push audio
+# ---------------------
 def push_audio(user_id, audio_url):
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {ACCESS_TOKEN}"
     }
 
-    data = {
-        "to": user_id,
-        "messages": [
-            {
+    requests.post(
+        "https://api.line.me/v2/bot/message/push",
+        headers=headers,
+        data=json.dumps({
+            "to": user_id,
+            "messages": [{
                 "type": "audio",
                 "originalContentUrl": audio_url,
                 "duration": 1000
-            }
-        ]
-    }
-
-    res = requests.post(
-        "https://api.line.me/v2/bot/message/push",
-        headers=headers,
-        data=json.dumps(data)
+            }]
+        })
     )
 
-    print("Push:", res.status_code)
-    print(res.text)
-
-
-# ----------------------
-# レベル選択メニュー
-# ----------------------
-def level_menu(text="レベルを選んでください。"):
+# ---------------------
+# レベルメニュー
+# ---------------------
+def level_menu():
     return {
         "type": "text",
-        "text": text,
+        "text": "レベルを選んでください",
         "quickReply": {
             "items": [
-                {"type": "action", "action": {"type": "message", "label": "初級", "text": "初級"}},
-                {"type": "action", "action": {"type": "message", "label": "中級", "text": "中級"}}
+                {"type": "action",
+                 "action": {"type": "message", "label": "初級", "text": "初級"}},
+                {"type": "action",
+                 "action": {"type": "message", "label": "中級", "text": "中級"}}
             ]
         }
     }
 
-
-# ----------------------
-# ボタン生成
-# ----------------------
-def build_button(text):
-    return {
-        "type": "button",
-        "action": {"type": "message", "label": text, "text": text},
-        "style": "primary",
-        "color": "#6CC4A1",
-        "flex": 1
-    }
-
-
-# ----------------------
+# ---------------------
 # 問題生成
-# ----------------------
+# ---------------------
 def create_question(user_id):
     level = user_state[user_id]["level"]
     question = random.choice(words[level])
     direction = random.choice(["jp_to_kr", "kr_to_jp"])
 
     if direction == "jp_to_kr":
-        prompt = f"『{question['jp']}』は韓国語で？"
+        prompt = f"{question['jp']} は韓国語で？"
         correct = question["kr"]
         wrong = [w["kr"] for w in words[level] if w["kr"] != correct]
         user_state[user_id]["last_audio"] = None
-
     else:
-        prompt = f"『{question['kr']}』は日本語で？"
+        prompt = f"{question['kr']} は日本語で？"
         correct = question["jp"]
         wrong = [w["jp"] for w in words[level] if w["jp"] != correct]
 
-        audio_file = filename_map.get(question["kr"])
-        if audio_file:
-            encoded_file = quote(audio_file)
-            audio_url = BASE_AUDIO_URL + encoded_file
-            user_state[user_id]["last_audio"] = audio_url
+        encoded = quote(filename_map[question["kr"]])
+        user_state[user_id]["last_audio"] = BASE_AUDIO_URL + encoded
 
-    wrong = list(set(wrong))
     choices = random.sample(wrong, min(3, len(wrong)))
     choices.append(correct)
     random.shuffle(choices)
 
-    user_state[user_id]["correct_answer"] = correct
+    user_state[user_id]["correct"] = correct
     user_state[user_id]["choices"] = choices
 
-    contents = [
-        {"type": "text", "text": prompt, "weight": "bold", "size": "lg"}
-    ]
-
-    if user_state[user_id].get("last_audio"):
-        contents.append({
-            "type": "button",
-            "action": {"type": "message", "label": "🔊 もう一度聞く", "text": "音声再生"},
-            "style": "secondary"
-        })
-
-    for i in range(0, len(choices), 2):
-        row = {
-            "type": "box",
-            "layout": "horizontal",
-            "spacing": "sm",
-            "contents": []
-        }
-        row["contents"].append(build_button(choices[i]))
-        if i + 1 < len(choices):
-            row["contents"].append(build_button(choices[i+1]))
-        contents.append(row)
-
-    contents.append({
-        "type": "button",
-        "action": {"type": "message", "label": "やめる", "text": "やめる"},
-        "style": "link"
-    })
-
     return {
-        "type": "flex",
-        "altText": "クイズ問題",
-        "contents": {
-            "type": "bubble",
-            "body": {
-                "type": "box",
-                "layout": "vertical",
-                "spacing": "lg",
-                "contents": contents
-            }
-        }
+        "type": "text",
+        "text": prompt + "\n\n" + "\n".join(choices)
     }
 
-
-# ----------------------
+# ---------------------
 # Webhook
-# ----------------------
+# ---------------------
 @app.route("/callback", methods=["POST"])
 def callback():
     body = request.get_json()
     events = body.get("events", [])
 
     for event in events:
-        if event["type"] != "message":
+
+        # message以外は無視
+        if event.get("type") != "message":
+            continue
+
+        message = event.get("message", {})
+        if message.get("type") != "text":
+            continue
+
+        text = message.get("text")
+        if not text:
             continue
 
         user_id = event["source"]["userId"]
         reply_token = event["replyToken"]
-        text = event["message"]["text"]
 
+        # レベル選択
         if text in words:
             user_state[user_id] = {
                 "level": text,
                 "playing": True,
-                "question_count": 0,
-                "correct_count": 0,
-                "correct_answer": None,
-                "choices": [],
+                "count": 0,
+                "score": 0,
                 "last_audio": None
             }
+            q = create_question(user_id)
+            reply(reply_token, [q])
 
-            flex = create_question(user_id)
-            send_reply(reply_token, [flex])
-
-            audio_url = user_state[user_id].get("last_audio")
-            if audio_url:
-                push_audio(user_id, audio_url)
+            audio = user_state[user_id].get("last_audio")
+            if audio:
+                push_audio(user_id, audio)
             continue
 
+        # 音声再生
         if text == "音声再生" and user_id in user_state:
-            audio_url = user_state[user_id].get("last_audio")
-            if audio_url:
-                push_audio(user_id, audio_url)
+            audio = user_state[user_id].get("last_audio")
+            if audio:
+                push_audio(user_id, audio)
             continue
 
-        if text == "やめる" and user_id in user_state:
-            user_state[user_id]["playing"] = False
-            send_reply(reply_token, [level_menu("クイズを終了しました。")])
-            continue
-
-        if user_id in user_state and user_state[user_id].get("playing"):
+        # 回答処理
+        if user_id in user_state and user_state[user_id]["playing"]:
             if text in user_state[user_id]["choices"]:
+                user_state[user_id]["count"] += 1
 
-                correct = user_state[user_id]["correct_answer"]
-                user_state[user_id]["question_count"] += 1
-
-                if text == correct:
-                    user_state[user_id]["correct_count"] += 1
-                    result_text = "正解！🔥"
+                if text == user_state[user_id]["correct"]:
+                    user_state[user_id]["score"] += 1
+                    msg = "正解！"
                 else:
-                    result_text = f"違います。正解は {correct}"
+                    msg = f"違います。正解は {user_state[user_id]['correct']}"
 
-                if user_state[user_id]["question_count"] >= 5:
-                    total = user_state[user_id]["question_count"]
-                    correct_num = user_state[user_id]["correct_count"]
-                    accuracy = int((correct_num / total) * 100)
+                if user_state[user_id]["count"] >= 5:
+                    score = user_state[user_id]["score"]
+                    total = user_state[user_id]["count"]
                     user_state[user_id]["playing"] = False
 
-                    send_reply(reply_token, [{
+                    reply(reply_token, [{
                         "type": "text",
-                        "text": (
-                            f"{result_text}\n\n"
-                            f"🎉 5問終了！\n"
-                            f"正解数：{correct_num} / {total}\n"
-                            f"正答率：{accuracy}%"
-                        )
+                        "text": f"{msg}\n\n5問終了\n{score}/{total}"
                     }, level_menu()])
                     continue
 
-                flex = create_question(user_id)
-                send_reply(reply_token, [
-                    {"type": "text", "text": result_text},
-                    flex
+                q = create_question(user_id)
+                reply(reply_token, [
+                    {"type": "text", "text": msg},
+                    q
                 ])
 
-                audio_url = user_state[user_id].get("last_audio")
-                if audio_url:
-                    push_audio(user_id, audio_url)
+                audio = user_state[user_id].get("last_audio")
+                if audio:
+                    push_audio(user_id, audio)
 
     return "OK"
