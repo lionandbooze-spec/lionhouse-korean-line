@@ -61,7 +61,7 @@ def callback():
         message = None
 
         # レベル選択
-        if text in words.keys():
+        if text in words:
             user_state[user_id] = {
                 "level": text,
                 "playing": True,
@@ -214,7 +214,14 @@ def create_question(user_id):
             user_state[user_id]["last_audio"] = audio_url
             show_audio_button = True
 
-    choices = random.sample(wrong, 3) + [correct]
+    # 🔥 安全な選択肢生成
+    wrong = list(set(wrong))
+    if len(wrong) >= 3:
+        choices = random.sample(wrong, 3)
+    else:
+        choices = wrong.copy()
+
+    choices.append(correct)
     random.shuffle(choices)
 
     user_state[user_id]["correct_answer"] = correct
@@ -241,16 +248,20 @@ def create_question(user_id):
         })
 
     rows = []
-    for i in range(0, 4, 2):
-        rows.append({
+    for i in range(0, len(choices), 2):
+        row = {
             "type": "box",
             "layout": "horizontal",
             "spacing": "sm",
-            "contents": [
-                build_button(choices[i]),
-                build_button(choices[i+1])
-            ]
-        })
+            "contents": []
+        }
+
+        row["contents"].append(build_button(choices[i]))
+
+        if i + 1 < len(choices):
+            row["contents"].append(build_button(choices[i+1]))
+
+        rows.append(row)
 
     contents.extend(rows)
 
