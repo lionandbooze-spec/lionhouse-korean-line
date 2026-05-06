@@ -22,7 +22,7 @@ words = {
     ]
 }
 
-# ユーザー状態管理
+# ユーザー状態
 user_state = {}
 
 @app.route("/callback", methods=["POST"])
@@ -45,64 +45,55 @@ def callback():
             if text in words.keys():
                 user_state[user_id] = {
                     "level": text,
-                    "answer": None
+                    "answer": None,
+                    "playing": False
                 }
 
-                data = {
-                    "replyToken": reply_token,
-                    "messages":[
-                        {"type":"text",
-                         "text": f"{text}レベルを選択しました。\n「スタート」と送ってください。"}
-                    ]
-                }
+                message = f"{text}レベルを選択しました。\n「スタート」と送ってください。"
 
-            # スタートで出題
+            # スタート
             elif text == "スタート":
                 if user_id in user_state and user_state[user_id]["level"]:
+                    user_state[user_id]["playing"] = True
                     level = user_state[user_id]["level"]
                     question = random.choice(words[level])
                     user_state[user_id]["answer"] = question["kr"]
 
-                    data = {
-                        "replyToken": reply_token,
-                        "messages":[
-                            {"type":"text",
-                             "text": f"{question['jp']} は韓国語で？"}
-                        ]
-                    }
+                    message = f"{question['jp']} は韓国語で？"
                 else:
-                    data = {
-                        "replyToken": reply_token,
-                        "messages":[
-                            {"type":"text",
-                             "text": "まず「初級」または「中級」を選んでください。"}
-                        ]
-                    }
+                    message = "まず「初級」または「中級」を選んでください。"
 
-            # 回答チェック
-            elif user_id in user_state and user_state[user_id]["answer"]:
+            # 終了
+            elif text == "終了":
+                if user_id in user_state:
+                    user_state[user_id]["playing"] = False
+                    message = "クイズを終了しました。"
+                else:
+                    message = "クイズは開始していません。"
+
+            # 回答チェック（連続出題）
+            elif user_id in user_state and user_state[user_id].get("playing"):
                 correct = user_state[user_id]["answer"]
+                level = user_state[user_id]["level"]
 
                 if text == correct:
-                    message = "正解！🔥"
+                    result = "正解！🔥"
                 else:
-                    message = f"違います。正解は {correct}"
+                    result = f"違います。正解は {correct}"
 
-                user_state[user_id]["answer"] = None
+                # 次の問題
+                question = random.choice(words[level])
+                user_state[user_id]["answer"] = question["kr"]
 
-                data = {
-                    "replyToken": reply_token,
-                    "messages":[{"type":"text","text": message}]
-                }
+                message = f"{result}\n\n次の問題👇\n{question['jp']} は韓国語で？"
 
             else:
-                data = {
-                    "replyToken": reply_token,
-                    "messages":[
-                        {"type":"text",
-                         "text": "「初級」または「中級」を送ってください。"}
-                    ]
-                }
+                message = "「初級」または「中級」を送ってください。"
+
+            data = {
+                "replyToken": reply_token,
+                "messages":[{"type":"text","text": message}]
+            }
 
             requests.post(
                 "https://api.line.me/v2/bot/message/reply",
