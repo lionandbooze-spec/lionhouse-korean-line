@@ -1,13 +1,14 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 import requests
 import json
 import os
 import random
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 
+# --- 単語データ ---
 words = {
     "初級": [
         {"jp": "こんにちは", "kr": "안녕하세요"},
@@ -25,6 +26,7 @@ words = {
     ]
 }
 
+# --- 音声ファイル対応表（staticフォルダ内に置く）---
 filename_map = {
     "안녕하세요": "안녕하세요.mp3",
     "감사합니다": "감사합니다.mp3",
@@ -40,6 +42,12 @@ filename_map = {
 
 user_state = {}
 
+# --- static公開 ---
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('static', filename)
+
+# --- Webhook ---
 @app.route("/callback", methods=["POST"])
 def callback():
     body = request.get_json()
@@ -132,7 +140,6 @@ def callback():
                     send_reply(reply_token, messages, headers)
                     continue
 
-        # それ以外
         if not message:
             message = level_menu()
 
@@ -145,7 +152,7 @@ def callback():
 
     return "OK"
 
-
+# --- LINE送信 ---
 def send_reply(reply_token, messages, headers):
     data = {
         "replyToken": reply_token,
@@ -161,7 +168,7 @@ def send_reply(reply_token, messages, headers):
     print(response.status_code)
     print(response.text)
 
-
+# --- レベルメニュー ---
 def level_menu(text="レベルを選んでください。"):
     return {
         "type": "text",
@@ -169,22 +176,15 @@ def level_menu(text="レベルを選んでください。"):
         "quickReply": level_buttons()
     }
 
-
 def level_buttons():
     return {
         "items": [
-            {
-                "type": "action",
-                "action": {"type": "message", "label": "初級", "text": "初級"}
-            },
-            {
-                "type": "action",
-                "action": {"type": "message", "label": "中級", "text": "中級"}
-            }
+            {"type": "action", "action": {"type": "message", "label": "初級", "text": "初級"}},
+            {"type": "action", "action": {"type": "message", "label": "中級", "text": "中級"}}
         ]
     }
 
-
+# --- 問題生成 ---
 def create_question(user_id):
     level = user_state[user_id]["level"]
     question = random.choice(words[level])
@@ -206,15 +206,14 @@ def create_question(user_id):
         audio_file = filename_map.get(question["kr"])
         if audio_file:
             audio_url = f"https://lionhouse-korean-line.onrender.com/static/{audio_file}"
+            user_state[user_id]["last_audio"] = audio_url
             audio_message = {
                 "type": "audio",
                 "originalContentUrl": audio_url,
                 "duration": 2000
             }
-            user_state[user_id]["last_audio"] = audio_url
             show_audio_button = True
 
-    # 🔥 安全な選択肢生成
     wrong = list(set(wrong))
     if len(wrong) >= 3:
         choices = random.sample(wrong, 3)
@@ -228,22 +227,13 @@ def create_question(user_id):
     user_state[user_id]["choices"] = choices
 
     contents = [
-        {
-            "type": "text",
-            "text": prompt,
-            "weight": "bold",
-            "size": "lg"
-        }
+        {"type": "text", "text": prompt, "weight": "bold", "size": "lg"}
     ]
 
     if show_audio_button:
         contents.append({
             "type": "button",
-            "action": {
-                "type": "message",
-                "label": "🔊 もう一度聞く",
-                "text": "音声再生"
-            },
+            "action": {"type": "message", "label": "🔊 もう一度聞く", "text": "音声再生"},
             "style": "secondary"
         })
 
@@ -257,7 +247,6 @@ def create_question(user_id):
         }
 
         row["contents"].append(build_button(choices[i]))
-
         if i + 1 < len(choices):
             row["contents"].append(build_button(choices[i+1]))
 
@@ -267,11 +256,7 @@ def create_question(user_id):
 
     contents.append({
         "type": "button",
-        "action": {
-            "type": "message",
-            "label": "やめる",
-            "text": "やめる"
-        },
+        "action": {"type": "message", "label": "やめる", "text": "やめる"},
         "style": "link"
     })
 
@@ -280,27 +265,24 @@ def create_question(user_id):
         "altText": "クイズ問題",
         "contents": {
             "type": "bubble",
-            "body": {
-                "type": "box",
-                "layout": "vertical",
-                "spacing": "lg",
-                "contents": contents
-            }
+            "body": {"type": "box", "layout": "vertical", "spacing": "lg", "contents": contents}
         }
     }
 
-    return [audio_message, flex] if audio_message else [flex]
-
+    # 🔥 Flex → Audio の順で送る（LINE仕様対策）
+    if audio_message:
+        return [flex, audio_message]
+    else:
+        return [flex]
 
 def build_button(text):
     return {
         "type": "button",
-        "action": {
-            "type": "message",
-            "label": text,
-            "text": text
-        },
+        "action": {"type": "message", "label": text, "text": text},
         "style": "primary",
         "color": "#6CC4A1",
         "flex": 1
     }
+
+if __name__ == "__main__":
+    app.run()
