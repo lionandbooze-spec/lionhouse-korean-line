@@ -1,193 +1,43 @@
 {
   "🏠 日常": {
     "基礎": [
-      {
-        "jp": "食べる",
-        "kr": "먹다",
-        "type": "verb",
-        "conjugation": {
-          "basic": {
-            "present": ["먹어요", "食べます"],
-            "past": ["먹었어요", "食べました"]
-          },
-          "intermediate": {
-            "future": ["먹을 거예요", "食べるつもりです"],
-            "reason": ["먹어서 좋아요", "食べて嬉しいです"]
-          },
-          "advanced": {
-            "request": ["먹어 주세요", "食べてください"],
-            "conversation": [
-              "A: 지금 뭐 해요?",
-              "B: 밥을 먹고 있어요."
-            ]
-          }
-        }
-      },
-      {
-        "jp": "行く",
-        "kr": "가다",
-        "type": "verb",
-        "conjugation": {
-          "basic": {
-            "present": ["가요", "行きます"],
-            "past": ["갔어요", "行きました"]
-          },
-          "intermediate": {
-            "future": ["갈 거예요", "行くつもりです"],
-            "reason": ["가서 만나요", "行って会います"]
-          },
-          "advanced": {
-            "request": ["가 주세요", "行ってください"],
-            "conversation": [
-              "A: 어디에 가요?",
-              "B: 학교에 가요."
-            ]
-          }
-        }
-      },
-      {
-        "jp": "来る",
-        "kr": "오다",
-        "type": "verb",
-        "conjugation": {
-          "basic": {
-            "present": ["와요", "来ます"],
-            "past": ["왔어요", "来ました"]
-          },
-          "intermediate": {
-            "future": ["올 거예요", "来るつもりです"],
-            "reason": ["와서 반가워요", "来て嬉しいです"]
-          },
-          "advanced": {
-            "request": ["와 주세요", "来てください"],
-            "conversation": [
-              "A: 언제 와요?",
-              "B: 지금 와요."
-            ]
-          }
-        }
-      },
-      {
-        "jp": "見る",
-        "kr": "보다",
-        "type": "verb",
-        "conjugation": {
-          "basic": {
-            "present": ["봐요", "見ます"],
-            "past": ["봤어요", "見ました"]
-          },
-          "intermediate": {
-            "future": ["볼 거예요", "見るつもりです"],
-            "reason": ["봐서 알아요", "見て分かります"]
-          },
-          "advanced": {
-            "request": ["봐 주세요", "見てください"],
-            "conversation": [
-              "A: 뭐를 봐요?",
-              "B: 영화를 봐요."
-            ]
-          }
-        }
-      },
-      {
-        "jp": "する",
-        "kr": "하다",
-        "type": "verb",
-        "conjugation": {
-          "basic": {
-            "present": ["해요", "します"],
-            "past": ["했어요", "しました"]
-          },
-          "intermediate": {
-            "future": ["할 거예요", "するつもりです"],
-            "reason": ["해서 좋아요", "して嬉しいです"]
-          },
-          "advanced": {
-            "request": ["해 주세요", "してください"],
-            "conversation": [
-              "A: 뭐 해요?",
-              "B: 숙제를 해요."
-            ]
-          }
-        }
-      },
+      { "kr": "어머니", "jp": "母", "type": "noun", "example": { "basic": { "kr": "어머니가 요리해요", "jp": "母が料理します" } } },
+      { "kr": "아버지", "jp": "父", "type": "noun", "example": { "basic": { "kr": "아버지가 일해요", "jp": "父が働きます" } } },
+      { "kr": "친구", "jp": "友達", "type": "noun", "example": { "basic": { "kr": "친구를 만나요", "jp": "友達に会います" } } },
+      { "kr": "회사", "jp": "会社", "type": "noun", "example": { "basic": { "kr": "회사에 가요", "jp": "会社に行きます" } } },
+      { "kr": "학교", "jp": "学校", "type": "noun", "example": { "basic": { "kr": "학교에서 공부해요", "jp": "学校で勉強します" } } },
+      { "kr": "집", "jp": "家", "type": "noun", "example": { "basic": { "kr": "집에 가요", "jp": "家に行きます" } } },
+      { "kr": "물", "jp": "水", "type": "noun", "example": { "basic": { "kr": "물을 마셔요", "jp": "水を飲みます" } } },
+      { "kr": "밥", "jp": "ご飯", "type": "noun", "example": { "basic": { "kr": "밥을 먹어요", "jp": "ご飯を食べます" } } },
+      { "kr": "책", "jp": "本", "type": "noun", "example": { "basic": { "kr": "책을 읽어요", "jp": "本を読みます" } } },
+      { "kr": "전화", "jp": "電話", "type": "noun", "example": { "basic": { "kr": "전화를 해요", "jp": "電話をします" } } },
+      { "kr": "시간", "jp": "時間", "type": "noun", "example": { "basic": { "kr": "시간이 없어요", "jp": "時間がありません" } } },
+      { "kr": "돈", "jp": "お金", "type": "noun", "example": { "basic": { "kr": "돈이 없어요", "jp": "お金がありません" } } },
+      { "kr": "오늘", "jp": "今日", "type": "noun", "example": { "basic": { "kr": "오늘 바빠요", "jp": "今日は忙しいです" } } },
+      { "kr": "내일", "jp": "明日", "type": "noun", "example": { "basic": { "kr": "내일 가요", "jp": "明日行きます" } } },
+      { "kr": "지금", "jp": "今", "type": "noun", "example": { "basic": { "kr": "지금 와요", "jp": "今来ます" } } },
+      { "kr": "여기", "jp": "ここ", "type": "noun", "example": { "basic": { "kr": "여기에 있어요", "jp": "ここにいます" } } },
+      { "kr": "거기", "jp": "そこ", "type": "noun", "example": { "basic": { "kr": "거기에 가요", "jp": "そこに行きます" } } },
+      { "kr": "사람", "jp": "人", "type": "noun", "example": { "basic": { "kr": "사람이 많아요", "jp": "人が多いです" } } },
+      { "kr": "남자", "jp": "男", "type": "noun", "example": { "basic": { "kr": "남자가 와요", "jp": "男が来ます" } } },
+      { "kr": "여자", "jp": "女", "type": "noun", "example": { "basic": { "kr": "여자가 웃어요", "jp": "女が笑います" } } },
 
-      {
-        "jp": "ご飯",
-        "kr": "밥",
-        "type": "noun",
-        "example": {
-          "basic": {
-            "kr": "밥을 먹어요.",
-            "jp": "ご飯を食べます。"
-          },
-          "intermediate": {
-            "kr": "밥이라서 좋아요.",
-            "jp": "ご飯なので嬉しいです。"
-          },
-          "advanced": {
-            "kr": "밥이지만 많이 안 먹어요.",
-            "jp": "ご飯ですがあまり食べません。"
-          }
-        }
-      },
-      {
-        "jp": "学校",
-        "kr": "학교",
-        "type": "noun",
-        "example": {
-          "basic": {
-            "kr": "학교에 가요.",
-            "jp": "学校に行きます。"
-          },
-          "intermediate": {
-            "kr": "학교라서 바빠요.",
-            "jp": "学校なので忙しいです。"
-          },
-          "advanced": {
-            "kr": "학교지만 재미있어요.",
-            "jp": "学校ですが楽しいです。"
-          }
-        }
-      },
-      {
-        "jp": "家",
-        "kr": "집",
-        "type": "noun",
-        "example": {
-          "basic": {
-            "kr": "집에 있어요.",
-            "jp": "家にいます。"
-          },
-          "intermediate": {
-            "kr": "집이라서 편해요.",
-            "jp": "家なので楽です。"
-          },
-          "advanced": {
-            "kr": "집이지만 좁아요.",
-            "jp": "家ですが狭いです。"
-          }
-        }
-      },
-      {
-        "jp": "大きい",
-        "kr": "크다",
-        "type": "adjective",
-        "example": {
-          "basic": {
-            "kr": "집이 커요.",
-            "jp": "家が大きいです。"
-          },
-          "intermediate": {
-            "kr": "크지만 예뻐요.",
-            "jp": "大きいですが綺麗です。"
-          },
-          "advanced": {
-            "kr": "커서 편해요.",
-            "jp": "大きいので快適です。"
-          }
-        }
-      }
+      { "kr": "가다", "jp": "行く", "type": "verb", "conjugation": { "basic": { "present": ["가요", "行きます"], "past": ["갔어요", "行きました"] } } },
+      { "kr": "오다", "jp": "来る", "type": "verb", "conjugation": { "basic": { "present": ["와요", "来ます"], "past": ["왔어요", "来ました"] } } },
+      { "kr": "먹다", "jp": "食べる", "type": "verb", "conjugation": { "basic": { "present": ["먹어요", "食べます"], "past": ["먹었어요", "食べました"] } } },
+      { "kr": "마시다", "jp": "飲む", "type": "verb", "conjugation": { "basic": { "present": ["마셔요", "飲みます"], "past": ["마셨어요", "飲みました"] } } },
+      { "kr": "보다", "jp": "見る", "type": "verb", "conjugation": { "basic": { "present": ["봐요", "見ます"], "past": ["봤어요", "見ました"] } } },
+      { "kr": "읽다", "jp": "読む", "type": "verb", "conjugation": { "basic": { "present": ["읽어요", "読みます"], "past": ["읽었어요", "読みました"] } } },
+      { "kr": "자다", "jp": "寝る", "type": "verb", "conjugation": { "basic": { "present": ["자요", "寝ます"], "past": ["잤어요", "寝ました"] } } },
+      { "kr": "일하다", "jp": "働く", "type": "verb", "conjugation": { "basic": { "present": ["일해요", "働きます"], "past": ["일했어요", "働きました"] } } },
+      { "kr": "공부하다", "jp": "勉強する", "type": "verb", "conjugation": { "basic": { "present": ["공부해요", "勉強します"], "past": ["공부했어요", "勉強しました"] } } },
+      { "kr": "만나다", "jp": "会う", "type": "verb", "conjugation": { "basic": { "present": ["만나요", "会います"], "past": ["만났어요", "会いました"] } } },
+
+      { "kr": "좋다", "jp": "良い", "type": "adjective", "example": { "basic": { "kr": "날씨가 좋아요", "jp": "天気が良いです" } } },
+      { "kr": "싫다", "jp": "嫌いだ", "type": "adjective", "example": { "basic": { "kr": "비가 싫어요", "jp": "雨が嫌いです" } } },
+      { "kr": "크다", "jp": "大きい", "type": "adjective", "example": { "basic": { "kr": "집이 커요", "jp": "家が大きいです" } } },
+      { "kr": "작다", "jp": "小さい", "type": "adjective", "example": { "basic": { "kr": "방이 작아요", "jp": "部屋が小さいです" } } },
+      { "kr": "바쁘다", "jp": "忙しい", "type": "adjective", "example": { "basic": { "kr": "오늘 바빠요", "jp": "今日は忙しいです" } } }
     ],
     "応用": [],
     "実践": []
