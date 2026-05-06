@@ -45,36 +45,25 @@ def callback():
             "Authorization": f"Bearer {ACCESS_TOKEN}"
         }
 
-        # 初期表示（レベル選択）
-        if user_id not in user_state:
-            message = level_menu()
-
-        # レベル選択
-        elif text in words.keys():
+        # レベル選択（即スタート）
+        if text in words.keys():
             user_state[user_id] = {
                 "level": text,
-                "playing": False,
+                "playing": True,
                 "question_count": 0,
                 "correct_count": 0,
                 "correct_answer": None,
                 "choices": []
             }
-            message = start_menu(text)
-
-        # スタート
-        elif text == "スタート":
-            user_state[user_id]["playing"] = True
-            user_state[user_id]["question_count"] = 0
-            user_state[user_id]["correct_count"] = 0
             message = create_question(user_id)
 
         # やめる
-        elif text == "やめる":
+        elif text == "やめる" and user_id in user_state:
             user_state[user_id]["playing"] = False
-            message = level_menu("クイズを終了しました。")
+            message = level_menu("クイズを終了しました。レベルを選んでください。")
 
         # 回答処理
-        elif user_state[user_id].get("playing") and text in user_state[user_id]["choices"]:
+        elif user_id in user_state and user_state[user_id].get("playing") and text in user_state[user_id]["choices"]:
             correct = user_state[user_id]["correct_answer"]
             level = user_state[user_id]["level"]
 
@@ -86,6 +75,7 @@ def callback():
             else:
                 result = f"違います。正解は {correct}"
 
+            # 5問終了
             if user_state[user_id]["question_count"] >= 5:
                 total = user_state[user_id]["question_count"]
                 correct_num = user_state[user_id]["correct_count"]
@@ -99,10 +89,12 @@ def callback():
                         f"{result}\n\n"
                         f"🎉 5問終了！\n"
                         f"正解数：{correct_num} / {total}\n"
-                        f"正答率：{accuracy}%"
+                        f"正答率：{accuracy}%\n\n"
+                        f"もう一度挑戦するレベルを選んでください。"
                     ),
                     "quickReply": level_buttons()
                 }
+
             else:
                 next_question = create_question(user_id)
 
@@ -121,6 +113,7 @@ def callback():
                 )
                 continue
 
+        # 初期状態
         else:
             message = level_menu()
 
@@ -158,25 +151,6 @@ def level_buttons():
                 "action": {"type": "message", "label": "中級", "text": "中級"}
             }
         ]
-    }
-
-
-def start_menu(level):
-    return {
-        "type": "text",
-        "text": f"{level}レベルを選択しました。",
-        "quickReply": {
-            "items": [
-                {
-                    "type": "action",
-                    "action": {"type": "message", "label": "スタート", "text": "スタート"}
-                },
-                {
-                    "type": "action",
-                    "action": {"type": "message", "label": "やめる", "text": "やめる"}
-                }
-            ]
-        }
     }
 
 
