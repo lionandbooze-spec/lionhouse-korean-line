@@ -30,7 +30,7 @@ words = {
 }
 
 # ----------------------
-# 音声ファイル対応
+# 音声対応
 # ----------------------
 filename_map = {
     "안녕하세요": "안녕하세요.mp3",
@@ -104,7 +104,7 @@ def push_audio(user_id, audio_url):
 
 
 # ----------------------
-# レベルメニュー
+# レベル選択メニュー
 # ----------------------
 def level_menu(text="レベルを選んでください。"):
     return {
@@ -169,7 +169,6 @@ def create_question(user_id):
         {"type": "text", "text": prompt, "weight": "bold", "size": "lg"}
     ]
 
-    # 韓→日の時だけ音声ボタン
     if user_state[user_id].get("last_audio"):
         contents.append({
             "type": "button",
@@ -177,7 +176,6 @@ def create_question(user_id):
             "style": "secondary"
         })
 
-    # 選択肢ボタン
     for i in range(0, len(choices), 2):
         row = {
             "type": "box",
@@ -190,7 +188,6 @@ def create_question(user_id):
             row["contents"].append(build_button(choices[i+1]))
         contents.append(row)
 
-    # やめるボタン
     contents.append({
         "type": "button",
         "action": {"type": "message", "label": "やめる", "text": "やめる"},
@@ -228,7 +225,6 @@ def callback():
         reply_token = event["replyToken"]
         text = event["message"]["text"]
 
-        # レベル選択
         if text in words:
             user_state[user_id] = {
                 "level": text,
@@ -243,26 +239,22 @@ def callback():
             flex = create_question(user_id)
             send_reply(reply_token, [flex])
 
-            # 音声があればpush
             audio_url = user_state[user_id].get("last_audio")
             if audio_url:
                 push_audio(user_id, audio_url)
             continue
 
-        # 音声再生
         if text == "音声再生" and user_id in user_state:
             audio_url = user_state[user_id].get("last_audio")
             if audio_url:
                 push_audio(user_id, audio_url)
             continue
 
-        # やめる
         if text == "やめる" and user_id in user_state:
             user_state[user_id]["playing"] = False
             send_reply(reply_token, [level_menu("クイズを終了しました。")])
             continue
 
-        # 回答処理
         if user_id in user_state and user_state[user_id].get("playing"):
             if text in user_state[user_id]["choices"]:
 
@@ -303,7 +295,3 @@ def callback():
                     push_audio(user_id, audio_url)
 
     return "OK"
-
-
-if __name__ == "__main__":
-    app.run()
