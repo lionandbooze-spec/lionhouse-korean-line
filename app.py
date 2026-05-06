@@ -1,14 +1,16 @@
-from flask import Flask, request, send_from_directory
+from flask import Flask, request
 import requests
 import json
 import os
 import random
 
-app = Flask(__name__, static_url_path='/static')
+app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 
-# --- 単語データ ---
+# ----------------------
+# 単語データ
+# ----------------------
 words = {
     "初級": [
         {"jp": "こんにちは", "kr": "안녕하세요"},
@@ -26,7 +28,9 @@ words = {
     ]
 }
 
-# --- 音声ファイル対応表（staticフォルダ内）---
+# ----------------------
+# 音声対応表
+# ----------------------
 filename_map = {
     "안녕하세요": "안녕하세요.mp3",
     "감사합니다": "감사합니다.mp3",
@@ -40,14 +44,13 @@ filename_map = {
     "선택": "선택.mp3",
 }
 
+BASE_AUDIO_URL = "https://raw.githubusercontent.com/lionandbooze-spec/lionhouse-korean-line/main/audio/"
+
 user_state = {}
 
-# --- static公開 ---
-@app.route('/static/<path:filename>')
-def serve_static(filename):
-    return send_from_directory('static', filename)
-
-# --- LINE reply ---
+# ----------------------
+# LINE reply
+# ----------------------
 def send_reply(reply_token, messages):
     headers = {
         "Content-Type": "application/json",
@@ -68,7 +71,10 @@ def send_reply(reply_token, messages):
     print("Reply:", response.status_code)
     print(response.text)
 
-# --- LINE push（音声用） ---
+
+# ----------------------
+# LINE push（音声）
+# ----------------------
 def push_audio(user_id, audio_url):
     headers = {
         "Content-Type": "application/json",
@@ -95,7 +101,10 @@ def push_audio(user_id, audio_url):
     print("Push:", response.status_code)
     print(response.text)
 
-# --- レベルメニュー ---
+
+# ----------------------
+# レベルメニュー
+# ----------------------
 def level_menu(text="レベルを選んでください。"):
     return {
         "type": "text",
@@ -108,11 +117,26 @@ def level_menu(text="レベルを選んでください。"):
         }
     }
 
-# --- 問題生成 ---
+
+# ----------------------
+# ボタン生成
+# ----------------------
+def build_button(text):
+    return {
+        "type": "button",
+        "action": {"type": "message", "label": text, "text": text},
+        "style": "primary",
+        "color": "#6CC4A1",
+        "flex": 1
+    }
+
+
+# ----------------------
+# 問題生成
+# ----------------------
 def create_question(user_id):
     level = user_state[user_id]["level"]
     question = random.choice(words[level])
-
     direction = random.choice(["jp_to_kr", "kr_to_jp"])
 
     if direction == "jp_to_kr":
@@ -128,27 +152,21 @@ def create_question(user_id):
 
         audio_file = filename_map.get(question["kr"])
         if audio_file:
-            audio_url = f"https://lionhouse-korean-line.onrender.com/static/{audio_file}"
+            audio_url = BASE_AUDIO_URL + audio_file
             user_state[user_id]["last_audio"] = audio_url
 
     wrong = list(set(wrong))
-    if len(wrong) >= 3:
-        choices = random.sample(wrong, 3)
-    else:
-        choices = wrong.copy()
-
+    choices = random.sample(wrong, min(3, len(wrong)))
     choices.append(correct)
     random.shuffle(choices)
 
     user_state[user_id]["correct_answer"] = correct
     user_state[user_id]["choices"] = choices
 
-    # --- Flex構築 ---
     contents = [
         {"type": "text", "text": prompt, "weight": "bold", "size": "lg"}
     ]
 
-    # 韓→日のときだけ再生ボタン
     if user_state[user_id].get("last_audio"):
         contents.append({
             "type": "button",
@@ -179,7 +197,7 @@ def create_question(user_id):
         "style": "link"
     })
 
-    flex = {
+    return {
         "type": "flex",
         "altText": "クイズ問題",
         "contents": {
@@ -193,18 +211,10 @@ def create_question(user_id):
         }
     }
 
-    return flex
 
-def build_button(text):
-    return {
-        "type": "button",
-        "action": {"type": "message", "label": text, "text": text},
-        "style": "primary",
-        "color": "#6CC4A1",
-        "flex": 1
-    }
-
-# --- Webhook ---
+# ----------------------
+# Webhook
+# ----------------------
 @app.route("/callback", methods=["POST"])
 def callback():
     body = request.get_json()
@@ -218,8 +228,6 @@ def callback():
         reply_token = event["replyToken"]
         text = event["message"]["text"]
 
-        message = None
-
         # レベル選択
         if text in words:
             user_state[user_id] = {
@@ -231,10 +239,10 @@ def callback():
                 "choices": [],
                 "last_audio": None
             }
+
             flex = create_question(user_id)
             send_reply(reply_token, [flex])
 
-            # 音声は別push
             audio_url = user_state[user_id].get("last_audio")
             if audio_url:
                 push_audio(user_id, audio_url)
@@ -292,11 +300,9 @@ def callback():
                 audio_url = user_state[user_id].get("last_audio")
                 if audio_url:
                     push_audio(user_id, audio_url)
-                continue
-
-        send_reply(reply_token, [level_menu()])
 
     return "OK"
+
 
 if __name__ == "__main__":
     app.run()
