@@ -22,7 +22,6 @@ words = {
     ]
 }
 
-# ユーザー状態
 user_state = {}
 
 @app.route("/callback", methods=["POST"])
@@ -45,21 +44,26 @@ def callback():
             if text in words.keys():
                 user_state[user_id] = {
                     "level": text,
+                    "playing": False,
                     "answer": None,
-                    "playing": False
+                    "question_count": 0,
+                    "correct_count": 0
                 }
 
                 message = f"{text}レベルを選択しました。\n「スタート」と送ってください。"
 
             # スタート
             elif text == "スタート":
-                if user_id in user_state and user_state[user_id]["level"]:
+                if user_id in user_state:
                     user_state[user_id]["playing"] = True
+                    user_state[user_id]["question_count"] = 0
+                    user_state[user_id]["correct_count"] = 0
+
                     level = user_state[user_id]["level"]
                     question = random.choice(words[level])
                     user_state[user_id]["answer"] = question["kr"]
 
-                    message = f"{question['jp']} は韓国語で？"
+                    message = f"第1問👇\n{question['jp']} は韓国語で？"
                 else:
                     message = "まず「初級」または「中級」を選んでください。"
 
@@ -71,21 +75,45 @@ def callback():
                 else:
                     message = "クイズは開始していません。"
 
-            # 回答チェック（連続出題）
+            # 回答処理
             elif user_id in user_state and user_state[user_id].get("playing"):
                 correct = user_state[user_id]["answer"]
                 level = user_state[user_id]["level"]
 
+                user_state[user_id]["question_count"] += 1
+
                 if text == correct:
+                    user_state[user_id]["correct_count"] += 1
                     result = "正解！🔥"
                 else:
                     result = f"違います。正解は {correct}"
 
-                # 次の問題
-                question = random.choice(words[level])
-                user_state[user_id]["answer"] = question["kr"]
+                # 5問終了判定
+                if user_state[user_id]["question_count"] >= 5:
+                    total = user_state[user_id]["question_count"]
+                    correct_num = user_state[user_id]["correct_count"]
+                    accuracy = int((correct_num / total) * 100)
 
-                message = f"{result}\n\n次の問題👇\n{question['jp']} は韓国語で？"
+                    message = (
+                        f"{result}\n\n"
+                        f"🎉 5問終了！\n"
+                        f"正解数：{correct_num} / {total}\n"
+                        f"正答率：{accuracy}%\n\n"
+                        f"もう一度やる場合は「スタート」と送ってください。"
+                    )
+
+                    user_state[user_id]["playing"] = False
+
+                else:
+                    next_q_num = user_state[user_id]["question_count"] + 1
+                    question = random.choice(words[level])
+                    user_state[user_id]["answer"] = question["kr"]
+
+                    message = (
+                        f"{result}\n\n"
+                        f"第{next_q_num}問👇\n"
+                        f"{question['jp']} は韓国語で？"
+                    )
 
             else:
                 message = "「初級」または「中級」を送ってください。"
