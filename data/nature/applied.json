@@ -1,1 +1,48 @@
+[
+  { "kr": "환경", "jp": "環境", "type": "noun" },
+  { "kr": "기후", "jp": "気候", "type": "noun" },
+  { "kr": "계절", "jp": "季節", "type": "noun" },
+  { "kr": "온도", "jp": "温度", "type": "noun" },
+  { "kr": "습도", "jp": "湿度", "type": "noun" },
+  { "kr": "대기", "jp": "大気", "type": "noun" },
+  { "kr": "공기", "jp": "空気", "type": "noun" },
+  { "kr": "지형", "jp": "地形", "type": "noun" },
+  { "kr": "자원", "jp": "資源", "type": "noun" },
+  { "kr": "오염", "jp": "汚染", "type": "noun" },
 
+  { "kr": "생태계", "jp": "生態系", "type": "noun" },
+  { "kr": "멸종", "jp": "絶滅", "type": "noun" },
+  { "kr": "보호", "jp": "保護", "type": "noun" },
+  { "kr": "관리", "jp": "管理", "type": "noun" },
+  { "kr": "회복", "jp": "回復", "type": "noun" },
+
+  { "kr": "운동하다", "jp": "運動する", "type": "verb" },
+  { "kr": "호흡하다", "jp": "呼吸する", "type": "verb" },
+  { "kr": "치료하다", "jp": "治療する", "type": "verb" },
+  { "kr": "검사하다", "jp": "検査する", "type": "verb" },
+  { "kr": "예방하다", "jp": "予防する", "type": "verb" },
+
+  { "kr": "건강하다", "jp": "健康だ", "type": "adjective" },
+  { "kr": "심각하다", "jp": "深刻だ", "type": "adjective" },
+  { "kr": "위험하다", "jp": "危険だ", "type": "adjective" },
+  { "kr": "안전하다", "jp": "安全だ", "type": "adjective" },
+  { "kr": "불안하다", "jp": "不安だ", "type": "adjective" },
+
+  { "kr": "갑자기", "jp": "突然", "type": "adverb" },
+  { "kr": "자연스럽게", "jp": "自然に", "type": "adverb" },
+  { "kr": "점점", "jp": "徐々に", "type": "adverb" },
+  { "kr": "급격히", "jp": "急激に", "type": "adverb" },
+  { "kr": "심하게", "jp": "ひどく", "type": "adverb" },
+
+  { "kr": "통증", "jp": "痛み", "type": "noun" },
+  { "kr": "증상", "jp": "症状", "type": "noun" },
+  { "kr": "원인", "jp": "原因", "type": "noun" },
+  { "kr": "결과", "jp": "結果", "type": "noun" },
+  { "kr": "영향", "jp": "影響", "type": "noun" },
+
+  { "kr": "증가하다", "jp": "増加する", "type": "verb" },
+  { "kr": "감소하다", "jp": "減少する", "type": "verb" },
+  { "kr": "변화하다", "jp": "変化する", "type": "verb" },
+  { "kr": "확대되다", "jp": "拡大される", "type": "verb" },
+  { "kr": "발생하다", "jp": "発生する", "type": "verb" }
+]
