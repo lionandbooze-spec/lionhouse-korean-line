@@ -1,1 +1,38 @@
+[
+  { "kr": "~입니다", "jp": "〜です（名詞文）", "type": "grammar" },
+  { "kr": "~이/가", "jp": "主格助詞", "type": "grammar" },
+  { "kr": "~은/는", "jp": "主題助詞", "type": "grammar" },
+  { "kr": "~을/를", "jp": "目的格助詞", "type": "grammar" },
+  { "kr": "~에", "jp": "場所・時間に", "type": "grammar" },
+  { "kr": "~에서", "jp": "場所で", "type": "grammar" },
+  { "kr": "~의", "jp": "〜の", "type": "grammar" },
 
+  { "kr": "~아요/어요", "jp": "丁寧体現在", "type": "grammar" },
+  { "kr": "~았어요/었어요", "jp": "丁寧体過去", "type": "grammar" },
+  { "kr": "~고 있습니다", "jp": "〜しています（進行）", "type": "grammar" },
+  { "kr": "~고 싶어요", "jp": "〜したいです", "type": "grammar" },
+  { "kr": "~(으)세요", "jp": "〜してください", "type": "grammar" },
+  { "kr": "~지 마세요", "jp": "〜しないでください", "type": "grammar" },
+
+  { "kr": "~아요?", "jp": "疑問形（現在）", "type": "grammar" },
+  { "kr": "~았어요?", "jp": "疑問形（過去）", "type": "grammar" },
+  { "kr": "~이에요?", "jp": "名詞疑問形", "type": "grammar" },
+
+  { "kr": "~도", "jp": "〜も", "type": "grammar" },
+  { "kr": "~만", "jp": "〜だけ", "type": "grammar" },
+  { "kr": "~부터", "jp": "〜から", "type": "grammar" },
+  { "kr": "~까지", "jp": "〜まで", "type": "grammar" },
+
+  { "kr": "~하고", "jp": "〜と（並列）", "type": "grammar" },
+  { "kr": "~그리고", "jp": "そして", "type": "grammar" },
+  { "kr": "~하지만", "jp": "しかし", "type": "grammar" },
+
+  { "kr": "~때", "jp": "〜するとき", "type": "grammar" },
+  { "kr": "~전에", "jp": "〜の前に", "type": "grammar" },
+  { "kr": "~후에", "jp": "〜の後に", "type": "grammar" },
+
+  { "kr": "~처럼", "jp": "〜のように", "type": "grammar" },
+  { "kr": "~보다", "jp": "〜より", "type": "grammar" },
+  { "kr": "~네요", "jp": "〜ですね（感嘆）", "type": "grammar" },
+  { "kr": "~겠어요", "jp": "〜でしょう・〜します（意志）", "type": "grammar" }
+]
