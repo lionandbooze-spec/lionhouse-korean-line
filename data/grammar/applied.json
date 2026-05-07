@@ -1,1 +1,31 @@
+[
+  { "kr": "~기 때문에", "jp": "〜だから（理由）", "type": "grammar" },
+  { "kr": "~아서/어서", "jp": "〜して（理由・順接）", "type": "grammar" },
+  { "kr": "~지만", "jp": "〜けれども", "type": "grammar" },
+  { "kr": "~는데", "jp": "〜ですが・〜ので", "type": "grammar" },
+  { "kr": "~거나", "jp": "〜か（選択）", "type": "grammar" },
 
+  { "kr": "~(으)면", "jp": "〜なら・〜たら（条件）", "type": "grammar" },
+  { "kr": "~았/었으면 좋겠다", "jp": "〜だったらいいな", "type": "grammar" },
+  { "kr": "~(으)려고 하다", "jp": "〜しようとする", "type": "grammar" },
+  { "kr": "~(으)려고", "jp": "〜するために", "type": "grammar" },
+  { "kr": "~(으)러 가다", "jp": "〜しに行く", "type": "grammar" },
+
+  { "kr": "~(으)ㄹ 수 있다", "jp": "〜できる（可能）", "type": "grammar" },
+  { "kr": "~(으)ㄹ 수 없다", "jp": "〜できない", "type": "grammar" },
+  { "kr": "~아/어야 하다", "jp": "〜しなければならない", "type": "grammar" },
+  { "kr": "~지 않아도 되다", "jp": "〜しなくてもよい", "type": "grammar" },
+  { "kr": "~아/어도 되다", "jp": "〜してもよい", "type": "grammar" },
+
+  { "kr": "~게 되다", "jp": "〜するようになる", "type": "grammar" },
+  { "kr": "~아/어 버리다", "jp": "〜してしまう", "type": "grammar" },
+  { "kr": "~고 나서", "jp": "〜してから", "type": "grammar" },
+  { "kr": "~기 전에", "jp": "〜する前に", "type": "grammar" },
+  { "kr": "~는 동안", "jp": "〜している間", "type": "grammar" },
+
+  { "kr": "~는 것 같다", "jp": "〜のようだ（推量）", "type": "grammar" },
+  { "kr": "~아/어 보이다", "jp": "〜そうに見える", "type": "grammar" },
+  { "kr": "~겠지요", "jp": "〜でしょうね", "type": "grammar" },
+  { "kr": "~나 보다", "jp": "〜らしい", "type": "grammar" },
+  { "kr": "~도록", "jp": "〜するように", "type": "grammar" }
+]
