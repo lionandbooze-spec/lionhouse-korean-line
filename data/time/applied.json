@@ -1,1 +1,47 @@
+[
+  { "kr": "과거", "jp": "過去", "type": "noun" },
+  { "kr": "현재", "jp": "現在", "type": "noun" },
+  { "kr": "미래", "jp": "未来", "type": "noun" },
+  { "kr": "순서", "jp": "順序", "type": "noun" },
+  { "kr": "기간", "jp": "期間", "type": "noun" },
+  { "kr": "빈도", "jp": "頻度", "type": "noun" },
+  { "kr": "속도", "jp": "速度", "type": "noun" },
+  { "kr": "시기", "jp": "時期", "type": "noun" },
+  { "kr": "타이밍", "jp": "タイミング", "type": "noun" },
+  { "kr": "마감", "jp": "締切", "type": "noun" },
 
+  { "kr": "일찍", "jp": "早く", "type": "adverb" },
+  { "kr": "늦게", "jp": "遅く", "type": "adverb" },
+  { "kr": "갑자기", "jp": "突然", "type": "adverb" },
+  { "kr": "곧", "jp": "まもなく", "type": "adverb" },
+  { "kr": "방금", "jp": "さっき", "type": "adverb" },
+  { "kr": "이제", "jp": "これから", "type": "adverb" },
+  { "kr": "계속", "jp": "ずっと", "type": "adverb" },
+  { "kr": "영원히", "jp": "永遠に", "type": "adverb" },
+  { "kr": "잠시", "jp": "しばらく", "type": "adverb" },
+  { "kr": "당장", "jp": "今すぐ", "type": "adverb" },
+
+  { "kr": "매일", "jp": "毎日", "type": "adverb" },
+  { "kr": "매주", "jp": "毎週", "type": "adverb" },
+  { "kr": "매달", "jp": "毎月", "type": "adverb" },
+  { "kr": "가끔씩", "jp": "時々", "type": "adverb" },
+  { "kr": "자주", "jp": "頻繁に", "type": "adverb" },
+
+  { "kr": "먼저 하다", "jp": "先にする", "type": "verb" },
+  { "kr": "나중에 하다", "jp": "後でする", "type": "verb" },
+  { "kr": "미루다", "jp": "延期する", "type": "verb" },
+  { "kr": "연기하다", "jp": "延期する（正式）", "type": "verb" },
+  { "kr": "지키다", "jp": "守る", "type": "verb" },
+
+  { "kr": "충분하다", "jp": "十分だ", "type": "adjective" },
+  { "kr": "부족하다", "jp": "不足している", "type": "adjective" },
+  { "kr": "빠르다", "jp": "速い", "type": "adjective" },
+  { "kr": "느리다", "jp": "遅い", "type": "adjective" },
+  { "kr": "정확하다", "jp": "正確だ", "type": "adjective" },
+
+  { "kr": "전체", "jp": "全体", "type": "noun" },
+  { "kr": "부분", "jp": "部分", "type": "noun" },
+  { "kr": "절반", "jp": "半分", "type": "noun" },
+  { "kr": "이상", "jp": "以上", "type": "noun" },
+  { "kr": "이하", "jp": "以下", "type": "noun" }
+]
