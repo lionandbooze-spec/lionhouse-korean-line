@@ -1,1 +1,36 @@
+[
+  { "kr": "안녕하세요", "jp": "こんにちは", "type": "conversation" },
+  { "kr": "안녕히 가세요", "jp": "さようなら（見送り）", "type": "conversation" },
+  { "kr": "안녕히 계세요", "jp": "さようなら（残る側）", "type": "conversation" },
+  { "kr": "감사합니다", "jp": "ありがとうございます", "type": "conversation" },
+  { "kr": "고맙습니다", "jp": "ありがとうございます（柔らかい）", "type": "conversation" },
+  { "kr": "죄송합니다", "jp": "申し訳ありません", "type": "conversation" },
+  { "kr": "미안합니다", "jp": "ごめんなさい", "type": "conversation" },
+  { "kr": "괜찮아요", "jp": "大丈夫です", "type": "conversation" },
+  { "kr": "네", "jp": "はい", "type": "conversation" },
+  { "kr": "아니요", "jp": "いいえ", "type": "conversation" },
 
+  { "kr": "처음 뵙겠습니다", "jp": "初めまして", "type": "conversation" },
+  { "kr": "반갑습니다", "jp": "お会いできて嬉しいです", "type": "conversation" },
+  { "kr": "잘 부탁드립니다", "jp": "よろしくお願いします", "type": "conversation" },
+  { "kr": "수고하셨습니다", "jp": "お疲れ様でした", "type": "conversation" },
+  { "kr": "잠시만요", "jp": "少々お待ちください", "type": "conversation" },
+
+  { "kr": "도와주세요", "jp": "助けてください", "type": "conversation" },
+  { "kr": "이해했어요", "jp": "理解しました", "type": "conversation" },
+  { "kr": "잘 모르겠어요", "jp": "よく分かりません", "type": "conversation" },
+  { "kr": "다시 말씀해 주세요", "jp": "もう一度言ってください", "type": "conversation" },
+  { "kr": "천천히 말해 주세요", "jp": "ゆっくり話してください", "type": "conversation" },
+
+  { "kr": "얼마예요?", "jp": "いくらですか？", "type": "conversation" },
+  { "kr": "어디예요?", "jp": "どこですか？", "type": "conversation" },
+  { "kr": "몇 시예요?", "jp": "何時ですか？", "type": "conversation" },
+  { "kr": "화장실 어디예요?", "jp": "トイレはどこですか？", "type": "conversation" },
+  { "kr": "카드 돼요?", "jp": "カード使えますか？", "type": "conversation" },
+
+  { "kr": "괜찮을 것 같아요", "jp": "大丈夫だと思います", "type": "conversation" },
+  { "kr": "생각해 볼게요", "jp": "考えてみます", "type": "conversation" },
+  { "kr": "그게 좋아요", "jp": "それがいいです", "type": "conversation" },
+  { "kr": "조금만 기다려 주세요", "jp": "少し待ってください", "type": "conversation" },
+  { "kr": "정말 감사합니다", "jp": "本当にありがとうございます", "type": "conversation" }
+]
